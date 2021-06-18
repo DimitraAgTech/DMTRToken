@@ -43,7 +43,7 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(PAUSER_ROLE, _msgSender());
 
-        _cap = 1000000000;
+        _cap = 1000000000 * (10 ** uint256(decimals()));
         _mint(msg.sender, 1000000 * (10 ** uint256(decimals())));
     }
 
@@ -67,7 +67,7 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
      */
     function mint(address to, uint256 amount) public virtual {
         require(hasRole(MINTER_ROLE, _msgSender()), "DMTRToken: must have minter role to mint");
-        require(ERC20.totalSupply() + amount <= cap(), "ERC20Capped: cap exceeded");
+        require(ERC20.totalSupply() + amount <= cap(), "DMTRToken: cap exceeded");
         super._mint(to, amount);
     }
 
@@ -110,6 +110,6 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
     ) internal virtual override(ERC20, ERC20Pausable) {
         super._beforeTokenTransfer(from, to, amount);
 
-        require(!paused(), "ERC20Pausable: token transfer while paused");
+        require(!paused(), "DMTRToken: token transfer while paused");
     }
 }
