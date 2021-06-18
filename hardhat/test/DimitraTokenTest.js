@@ -28,7 +28,7 @@ describe("Token contract Deployment", function() {
 
 describe("Token Role Tests", function() {
   it("Check and return various roles", async function() {
-    const [owner] = await ethers.getSigners();
+    const [owner, account1] = await ethers.getSigners();
 
     const DMTR = await ethers.getContractFactory("DimitraToken");
 
@@ -38,8 +38,11 @@ describe("Token Role Tests", function() {
 
     
 
-    // console.log((await dimitraToken.hasRole(formatBytes32String("MINTER_ROLE"),owner.address)));
-    dimitraToken.grantRole(formatBytes32String("MINTER_ROLE"),owner.address);
+    console.log((await dimitraToken.hasRole(formatBytes32String("MINTER_ROLE"),owner.address)));
+
+    await dimitraToken.connect(account1).mint(owner.address, 10000);
+
+    // dimitraToken.grantRole(formatBytes32String("MINTER_ROLE"),owner.address);
     // console.log((await dimitraToken.getRoleMember(formatBytes32String("MINTER_ROLE"),0)));
   })
 })
