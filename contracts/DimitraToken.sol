@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: UNLICENSED 
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -5,7 +7,6 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 
 
 /**
@@ -22,23 +23,36 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to other accounts.
  */
-contract DimitraToken is ERC20,Context, AccessControlEnumerable, ERC20Burnable, ERC20Pausable, ERC20Capped {
+
+ // ERC20Burnable, ERC20Capped, ERC20Pausable, ERC20
+contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20Pausable {
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    uint256 immutable private _cap;
 
 
     /**
      * @dev Constructor that gives msg.sender all of existing tokens.
      */
-    constructor () public ERC20("Dimitra Token", "DMTR") {
+    constructor () ERC20("Dimitra Token", "DMTR") {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(PAUSER_ROLE, _msgSender());
-        _mint(msg.sender, 1000000000 * (10 ** uint256(decimals())));
+
+        _cap = 1000000000;
+        _mint(msg.sender, 1000000 * (10 ** uint256(decimals())));
+    }
+
+
+    /**
+     * @dev Returns the cap on the token's total supply.
+     */
+    function cap() public view virtual returns (uint256) {
+        return _cap;
     }
 
 
@@ -53,7 +67,8 @@ contract DimitraToken is ERC20,Context, AccessControlEnumerable, ERC20Burnable, 
      */
     function mint(address to, uint256 amount) public virtual {
         require(hasRole(MINTER_ROLE, _msgSender()), "DMTRToken: must have minter role to mint");
-        _mint(to, amount);
+        require(ERC20.totalSupply() + amount <= cap(), "ERC20Capped: cap exceeded");
+        super._mint(to, amount);
     }
 
 
@@ -86,11 +101,15 @@ contract DimitraToken is ERC20,Context, AccessControlEnumerable, ERC20Burnable, 
         _unpause();
     }
 
+
+
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 amount
     ) internal virtual override(ERC20, ERC20Pausable) {
         super._beforeTokenTransfer(from, to, amount);
+
+        require(!paused(), "ERC20Pausable: token transfer while paused");
     }
 }
