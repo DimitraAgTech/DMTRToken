@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { parseEther, formatEther, formatUnits, parseUnits, formatBytes32String } = require("ethers/lib/utils");
+const { parseEther, formatEther, formatUnits, parseUnits, formatBytes32String, keccak256, id } = require("ethers/lib/utils");
 const { ethers } = require("hardhat");
 
 describe("Token contract Deployment", function() {
@@ -28,21 +28,55 @@ describe("Token contract Deployment", function() {
 
 describe("Token Role Tests", function() {
   it("Check and return various roles", async function() {
-    const [owner, account1] = await ethers.getSigners();
+    const [owner] = await ethers.getSigners();
 
     const DMTR = await ethers.getContractFactory("DimitraToken");
 
     const dimitraToken = await DMTR.deploy();
 
-    // console.log(owner.address);
+    console.log("owner.address is ",owner.address);
 
-    
+    // adminBytes = ethers.utils.formatBytes32String("0x00");
+    // console.log("adminBytes are ",adminBytes);
 
-    console.log((await dimitraToken.hasRole(formatBytes32String("MINTER_ROLE"),owner.address)));
+    // console.log("DEFAULT_ADMIN_ROLE should be owner ",(await dimitraToken.hasRole(adminBytes,owner.address)))
 
-    await dimitraToken.connect(account1).mint(owner.address, 10000);
 
-    // dimitraToken.grantRole(formatBytes32String("MINTER_ROLE"),owner.address);
-    // console.log((await dimitraToken.getRoleMember(formatBytes32String("MINTER_ROLE"),0)));
+    console.log("MINTER_ROLE should be owner ",(await dimitraToken.hasRole(id("MINTER_ROLE"),owner.address)));
+    console.log("PAUSER_ROLE should be owner ",(await dimitraToken.hasRole(id("PAUSER_ROLE"),owner.address)));
+    console.log("BURNER_ROLE should be owner ",(await dimitraToken.hasRole(id("BURNER_ROLE"),owner.address)));
+    console.log("ADMIN_ROLE should be owner ",(await dimitraToken.hasRole(id("ADMIN_ROLE"),owner.address)));
+    console.log("ADMIN_ROLE2 should be owner ",(await dimitraToken.hasRole(id("ADMIN_ROLE2"),owner.address)));
+
+  })
+
+  it("Grant roles test", async function() {
+    const [owner,account1, account2, account3] = await ethers.getSigners();
+
+    const DMTR = await ethers.getContractFactory("DimitraToken");
+
+    const dimitraToken = await DMTR.deploy();
+
+    console.log("owner.address is ",owner.address);
+
+    // Trying to mint from another owner
+    // expect((await dimitraToken.connect(account1).mint(account1.address,parseUnits("1000",18))).to.equal("DMTRToken: must have minter role to mint"));
+
+    await dimitraToken.grantRole(id("MINTER_ROLE"),account1.address);
+    await dimitraToken.connect(account1).mint(account1.address,parseUnits("1000",18));
+    console.log(formatEther(await dimitraToken.balanceOf(account1.address)));
+  })
+
+  it("Granting role from non admin account", async function() {
+    const [owner,account1, account2, account3] = await ethers.getSigners();
+
+    const DMTR = await ethers.getContractFactory("DimitraToken");
+
+    const dimitraToken = await DMTR.deploy();
+
+    console.log("owner.address is ",owner.address);
+
+    await dimitraToken.connect(account1).grantRole(id("MINTER_ROLE"),account1.address);
+
   })
 })
