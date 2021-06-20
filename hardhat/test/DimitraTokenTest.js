@@ -45,8 +45,8 @@ describe("Token Role Tests", function() {
     expect(await dimitraToken.hasRole(id("MINTER_ROLE"), owner.address)).to.equal(true);
     expect(await dimitraToken.hasRole(id("PAUSER_ROLE"), owner.address)).to.equal(true);
     expect(await dimitraToken.hasRole(id("BURNER_ROLE"), owner.address)).to.equal(true);
-    expect(await dimitraToken.hasRole(id("ADMIN_ROLE"),  owner.address)).to.equal(true);            // WHAT IS ADMIN_ROLE for ????
-    expect(await dimitraToken.hasRole(id("ADMIN_ROLE2"), owner.address)).to.equal(true);            // WHAT IS ADMIN_ROLE2 for ????
+    expect(await dimitraToken.hasRole(id("ADMIN_ROLE"),  owner.address)).to.equal(true); // WHAT IS ADMIN_ROLE for ????
+    expect(await dimitraToken.hasRole(id("ADMIN_ROLE2"), owner.address)).to.equal(true); // WHAT IS ADMIN_ROLE2 for ????
   })
 
   it("Non contract owner does not have minter, pauser, burner, and admin roles", async function() {
@@ -61,8 +61,8 @@ describe("Token Role Tests", function() {
   it("Contract owner can grant minter role ???", async function() {
     const balanceBeforeMinting = await dimitraToken.balanceOf(account1.address);
     //console.log("balanceBeforeMinting", formatEther(balanceBeforeMinting));
-    await dimitraToken.grantRole(id("MINTER_ROLE"), account1.address);                                // <- ******* is this OK ?????
-    await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));              //    is following test better ?????
+    await dimitraToken.grantRole(id("MINTER_ROLE"), account1.address);                   // <- ******* is this OK ????? is following test better ?????
+    await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));
     const balanceAfterMinting = await dimitraToken.balanceOf(account1.address);
     //console.log("balanceAfterMinting", formatEther(balanceAfterMinting));
   })
@@ -144,8 +144,8 @@ describe("Token Burning Tests", function() {
     const mintAmount = '1000000000000000000';
     dimitraToken.connect(owner).mint(account1.address, mintAmount);
     try {
-      await dimitraToken.connect(account1).burn(mintAmount);   // expected error -> test succeeded
-      throw new Error('Error: Burning by non BURNER_ROLE'); // if we get here -> test failed
+      await dimitraToken.connect(account1).burn(mintAmount);                             // expected error -> test succeeded
+      throw new Error('Error: Burning by non BURNER_ROLE');                              // if we get here -> test failed
     }
     catch (e) {
       //console.log("***e.message***", e.message);
@@ -175,8 +175,8 @@ describe("Token Pausing Tests", function() {
     // transfer should fail while paused
     dimitraToken.connect(owner).pause();
     try {
-      await dimitraToken.connect(account1).transfer(account2.address, amount);   // expected error -> test succeeded
-      throw new Error('Error: Error: Transfering while paused');                     // if we get here -> test failed
+      await dimitraToken.connect(account1).transfer(account2.address, amount);           // expected error -> test succeeded
+      throw new Error('Error: Error: Transfering while paused');                         // if we get here -> test failed
       ammount = await dimitraToken.balanceOf(account2.address);
       //console.log("***amount***", formatEther(ammount));
     }
@@ -202,8 +202,8 @@ describe("Token Pausing Tests", function() {
 
   it("Non contract owner that is not PAUSER_ROLE cannot pause contract", async function() {
     try {
-      await dimitraToken.connect(account1).pause();                                    // expected error -> test succeeded
-      throw new Error('Error: Pausing by non PAUSER_ROLE');                        // if we get here -> test failed
+      await dimitraToken.connect(account1).pause();                                      // expected error -> test succeeded
+      throw new Error('Error: Pausing by non PAUSER_ROLE');                              // if we get here -> test failed
     }
     catch (e) {
       //console.log("***e.message***", e.message);
