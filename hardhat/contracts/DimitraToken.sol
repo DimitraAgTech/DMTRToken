@@ -52,7 +52,7 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
         _setupRole(PAUSER_ROLE, _msgSender());
         _setupRole(BURNER_ROLE, _msgSender());
         
-        // Cap limit set to 1 billion
+        // Cap limit set to 1 billion tokens
         uint256 capLimit = 1000000000 * (10 ** uint256(decimals()));
         _cap = capLimit;
     }

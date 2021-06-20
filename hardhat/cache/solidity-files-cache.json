@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\contracts\\DimitraToken.sol": {
-      "lastModificationDate": 1624196134880,
-      "contentHash": "e3875e89783d79488e2a6a4aa88c8d8f",
+      "lastModificationDate": 1624209650098,
+      "contentHash": "4f1f3f6da0cbc94d67e5615636786f77",
       "sourceName": "contracts/DimitraToken.sol",
       "solcConfig": {
         "version": "0.8.0",
