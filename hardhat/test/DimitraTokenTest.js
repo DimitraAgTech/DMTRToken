@@ -82,7 +82,7 @@ describe("Token Role Tests", function() {
       throw new Error('Error: Granting role by non owner');
     }
     catch (e) {
-      console.log("***e.message***", e.message);
+      console.log("e.message", e.message);
       if (e.message && e.message === 'Error: Granting role by non owner') throw e
      }
   });
@@ -97,7 +97,7 @@ describe("Token Minting Tests", function() {
       throw new Error('Error: Minting by non MINTER_ROLE');
     }
     catch (e) {
-      console.log("***e.message***", e.message);
+      console.log("e.message", e.message);
       if (e.message && e.message === 'Error: Minting by non MINTER_ROLE') throw e
       
     }
@@ -148,7 +148,7 @@ describe("Token Burning Tests", function() {
       throw new Error('Error: Burning by non BURNER_ROLE');                              // if we get here -> test failed
     }
     catch (e) {
-      console.log("***e.message***", e.message);
+      console.log("e.message", e.message);
       if (e.message && e.message === 'Error: Burning by non BURNER_ROLE') throw e
     }
   });
@@ -157,12 +157,24 @@ describe("Token Burning Tests", function() {
     const mintAmount = parseUnits("10", 18);
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
     let balance = await dimitraToken.balanceOf(owner.address);
-    console.log("balance", formatEther(balance));
+    //console.log("balance", formatEther(balance));
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account1.address);
     await dimitraToken.connect(owner).approve(account1.address, balance);
     await dimitraToken.connect(account1).burnFrom(owner.address, balance);
     balance = await dimitraToken.balanceOf(owner.address);
-    console.log("balance", formatEther(balance));
+    //console.log("balance", formatEther(balance));
+  });
+
+  it("Non contract owner account1 can approve another account2 to burn tokens from account1", async function() {
+    const mintAmount = parseUnits("10", 18);
+    await dimitraToken.connect(owner).mint(account1.address, mintAmount);
+    let balance = await dimitraToken.balanceOf(account1.address);
+    //console.log("balance", formatEther(balance));
+    await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account2.address);
+    await dimitraToken.connect(account1).approve(account2.address, balance);
+    await dimitraToken.connect(account2).burnFrom(account1.address, balance);
+    balance = await dimitraToken.balanceOf(owner.address);
+    //console.log("balance", formatEther(balance));
   });
 
 });
@@ -194,7 +206,7 @@ describe("Token Pausing Tests", function() {
       //console.log("***amount***", formatEther(ammount));
     }
     catch (e) {
-      console.log("***e.message***", e.message);
+      console.log("e.message", e.message);
       if (e.message && e.message === "Error: Transfering while paused") throw e
     }
   });
@@ -219,7 +231,7 @@ describe("Token Pausing Tests", function() {
       throw new Error('Error: Pausing by non PAUSER_ROLE');                              // if we get here -> test failed
     }
     catch (e) {
-      console.log("***e.message***", e.message);
+      console.log("e.message", e.message);
       if (e.message && e.message === "Error: Pausing by non PAUSER_ROLE") throw e
     }
   });
