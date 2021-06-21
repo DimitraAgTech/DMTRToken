@@ -59,21 +59,17 @@ describe("Token Role Tests", function() {
   })
 
   it("Contract owner can grant minter role ???", async function() {
-    const balanceBeforeMinting = await dimitraToken.balanceOf(account1.address);
-    //console.log("balanceBeforeMinting", formatEther(balanceBeforeMinting));
+    //console.log("Balance before minting", formatEther(await dimitraToken.balanceOf(account1.address)));
     await dimitraToken.grantRole(id("MINTER_ROLE"), account1.address);                   // <- ******* is this OK ????? is following test better ?????
     await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));
-    const balanceAfterMinting = await dimitraToken.balanceOf(account1.address);
-    //console.log("balanceAfterMinting", formatEther(balanceAfterMinting));
+    //console.log("Balance after minting", formatEther(await dimitraToken.balanceOf(account1.address)));
   })
 
   it("Contract owner can grant minter role", async function() {
-    const balanceBeforeMinting = await dimitraToken.balanceOf(account1.address);
-    //console.log("balanceBeforeMinting", formatEther(balanceBeforeMinting));
+    console.log("Balance before minting", formatEther(await dimitraToken.balanceOf(account1.address)));
     await dimitraToken.connect(owner).grantRole(id("MINTER_ROLE"), account1.address);
     await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));
-    const balanceAfterMinting = await dimitraToken.balanceOf(account1.address);
-    //console.log("balanceAfterMinting", formatEther(balanceAfterMinting));
+    console.log("Balance after minting", formatEther(await dimitraToken.balanceOf(account1.address)));
   })
 
   it("Non contract owner cannot grant minter role", async function() {
@@ -161,20 +157,18 @@ describe("Token Burning Tests", function() {
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account1.address);
     await dimitraToken.connect(owner).approve(account1.address, balance);
     await dimitraToken.connect(account1).burnFrom(owner.address, balance);
-    balance = await dimitraToken.balanceOf(owner.address);
-    //console.log("balance", formatEther(balance));
+    //console.log("balance", formatEther(await dimitraToken.balanceOf(owner.address)));
   });
 
-  it("Non contract owner account1 can approve another account2 to burn tokens from account1", async function() {
+  it("An account can approve another account to burn its tokens", async function() {
     const mintAmount = parseUnits("10", 18);
     await dimitraToken.connect(owner).mint(account1.address, mintAmount);
     let balance = await dimitraToken.balanceOf(account1.address);
-    //console.log("balance", formatEther(balance));
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account2.address);
     await dimitraToken.connect(account1).approve(account2.address, balance);
     await dimitraToken.connect(account2).burnFrom(account1.address, balance);
-    balance = await dimitraToken.balanceOf(owner.address);
-    //console.log("balance", formatEther(balance));
+    //console.log("balance", formatEther(await dimitraToken.balanceOf(account1.address)));
+    //console.log("allowance", formatEther(await dimitraToken.allowance(account1.address, account2.address)));
   });
 
 });
@@ -190,7 +184,7 @@ describe("Token Pausing Tests", function() {
     // transfer should succeed while not paused
     await dimitraToken.connect(account1).transfer(account2.address, amount);
     ammount = await dimitraToken.balanceOf(account2.address);
-    //console.log("***amount to transfer***", formatEther(ammount));
+    //console.log("Amount to transfer", formatEther(ammount));
 
     // set balance up again
     amount = parseUnits("10", 18);
@@ -203,7 +197,7 @@ describe("Token Pausing Tests", function() {
       await dimitraToken.connect(account1).transfer(account2.address, amount);           // expected error -> test succeeded
       throw new Error('Error: Error: Transfering while paused');                         // if we get here -> test failed
       ammount = await dimitraToken.balanceOf(account2.address);
-      //console.log("***amount***", formatEther(ammount));
+      //console.log("Amount, formatEther(ammount));
     }
     catch (e) {
       console.log("e.message", e.message);
@@ -222,7 +216,7 @@ describe("Token Pausing Tests", function() {
     dimitraToken.connect(owner).unpause(); // see if it works now...
     await dimitraToken.connect(account1).transfer(account2.address, amount);
     ammount = await dimitraToken.balanceOf(account2.address);
-    //console.log("***amount***", formatEther(ammount));
+    //console.log("Amount", formatEther(ammount));
   });
 
   it("Non contract owner that is not PAUSER_ROLE cannot pause contract", async function() {
