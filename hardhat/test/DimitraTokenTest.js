@@ -45,8 +45,6 @@ describe("Token Role Tests", function() {
     expect(await dimitraToken.hasRole(id("MINTER_ROLE"), owner.address)).to.equal(true);
     expect(await dimitraToken.hasRole(id("PAUSER_ROLE"), owner.address)).to.equal(true);
     expect(await dimitraToken.hasRole(id("BURNER_ROLE"), owner.address)).to.equal(true);
-    expect(await dimitraToken.hasRole(id("ADMIN_ROLE"),  owner.address)).to.equal(true); // WHAT IS ADMIN_ROLE for ????
-    expect(await dimitraToken.hasRole(id("ADMIN_ROLE2"), owner.address)).to.equal(true); // WHAT IS ADMIN_ROLE2 for ????
   })
 
   it("Non contract owner does not have minter, pauser, burner, and admin roles", async function() {
@@ -54,8 +52,6 @@ describe("Token Role Tests", function() {
     expect(await dimitraToken.hasRole(id("MINTER_ROLE"), account1.address)).to.equal(false);
     expect(await dimitraToken.hasRole(id("PAUSER_ROLE"), account1.address)).to.equal(false);
     expect(await dimitraToken.hasRole(id("BURNER_ROLE"), account1.address)).to.equal(false);
-    expect(await dimitraToken.hasRole(id("ADMIN_ROLE"),  account1.address)).to.equal(false);
-    expect(await dimitraToken.hasRole(id("ADMIN_ROLE2"), account1.address)).to.equal(false);
   })
 
   it("Contract owner can grant minter role ???", async function() {

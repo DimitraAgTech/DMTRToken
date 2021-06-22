@@ -34,8 +34,6 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant ADMIN_ROLE2 = keccak256("ADMIN_ROLE2");
     uint256 immutable private _cap;
 
 
@@ -45,8 +43,6 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
     constructor () ERC20("Dimitra Token", "DMTR") {
         
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(ADMIN_ROLE, _msgSender());
-        _setupRole(ADMIN_ROLE2, _msgSender());
 
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(PAUSER_ROLE, _msgSender());
