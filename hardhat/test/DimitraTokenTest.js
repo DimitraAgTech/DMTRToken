@@ -54,12 +54,6 @@ describe("Token Role Tests", function() {
     expect(await dimitraToken.hasRole(id("BURNER_ROLE"), account1.address)).to.equal(false);
   })
 
-  it("Contract owner can grant minter role ???", async function() {
-    //console.log("Balance before minting", formatEther(await dimitraToken.balanceOf(account1.address)));
-    await dimitraToken.grantRole(id("MINTER_ROLE"), account1.address);                   // <- ******* is this OK ????? is following test better ?????
-    await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));
-    //console.log("Balance after minting", formatEther(await dimitraToken.balanceOf(account1.address)));
-  })
 
   it("Contract owner can grant minter role", async function() {
     console.log("Balance before minting", formatEther(await dimitraToken.balanceOf(account1.address)));
