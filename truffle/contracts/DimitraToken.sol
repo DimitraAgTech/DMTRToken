@@ -9,6 +9,8 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 
 
+
+
 /**
  * @dev {ERC20} token, including:
  *
@@ -30,7 +32,6 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     uint256 immutable private _cap;
 
 
@@ -38,14 +39,18 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
      * @dev Constructor that gives msg.sender all of existing tokens.
      */
     constructor () ERC20("Dimitra Token", "DMTR") {
+        
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(PAUSER_ROLE, _msgSender());
-
-        _cap = 1000000000 * (10 ** uint256(decimals()));
-        _mint(msg.sender, 1000000 * (10 ** uint256(decimals())));
+        _setupRole(BURNER_ROLE, _msgSender());
+        
+        // Cap limit set to 1 billion tokens
+        uint256 capLimit = 1000000000 * (10 ** uint256(decimals()));
+        _cap = capLimit;
     }
+
 
 
     /**
@@ -67,8 +72,39 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
      */
     function mint(address to, uint256 amount) public virtual {
         require(hasRole(MINTER_ROLE, _msgSender()), "DMTRToken: must have minter role to mint");
-        require(ERC20.totalSupply() + amount <= cap(), "DMTRToken: cap exceeded");
+        require(ERC20.totalSupply() + amount <= cap(), "DMTRToken: can not mint more than Cap");
         super._mint(to, amount);
+    }
+
+
+    /**
+     * @dev Destroys `amount` tokens from the caller.
+     *
+     * See {ERC20-_burn}.
+     */
+    function burn(uint256 amount) public virtual override(ERC20Burnable) {
+        require(hasRole(BURNER_ROLE, _msgSender()), "DMTRToken: must have burner role to burn");
+        _burn(_msgSender(), amount);
+    }
+
+
+    /**
+     * @dev Destroys `amount` tokens from `account`, deducting from the caller's
+     * allowance.
+     *
+     * See {ERC20-_burn} and {ERC20-allowance}.
+     *
+     * Requirements:
+     *
+     * - the caller must have allowance for ``accounts``'s tokens of at least
+     * `amount`.
+     */
+    function burnFrom(address account, uint256 amount) public virtual override(ERC20Burnable){
+        require(hasRole(BURNER_ROLE, _msgSender()), "DMTRToken: must have burner role to burn");
+        uint256 currentAllowance = allowance(account, _msgSender());
+        require(currentAllowance >= amount, "ERC20: burn amount exceeds allowance");
+        _approve(account, _msgSender(), currentAllowance - amount);
+        _burn(account, amount);
     }
 
 
@@ -100,7 +136,6 @@ contract DimitraToken is  Context, AccessControlEnumerable, ERC20Burnable, ERC20
         require(hasRole(PAUSER_ROLE, _msgSender()), "DMTRToken: must have pauser role to unpause");
         _unpause();
     }
-
 
 
     function _beforeTokenTransfer(
