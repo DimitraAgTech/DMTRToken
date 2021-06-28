@@ -18,7 +18,6 @@ beforeEach(async function () {
 });
 
 describe("Token Deployment Tests", function() {
-
   it("Deployment should have name 'Dimitra Token', symbol 'DMTR', decimals 18", async function() {
     expect(await dimitraToken.name()).to.equal('Dimitra Token');
     expect(await dimitraToken.symbol()).to.equal('DMTR');
@@ -38,55 +37,52 @@ describe("Token Deployment Tests", function() {
   });
 });
 
-describe("Token Role Tests", function() {
+describe("Token Transfer Tests", function () {
+  it("Should transfer tokens between accounts if balance is sufficient", async function() {
+    await dimitraToken.connect(owner).mint(account1.address, 50);
+    expect(await dimitraToken.balanceOf(account1.address)).to.equal(50);
+    await dimitraToken.connect(account1).transfer(account2.address, 50);
+    expect(await dimitraToken.balanceOf(account2.address)).to.equal(50);
+  });
+});
 
-  it("Contract owner has minter, pauser, burner, and admin roles", async function() {
-    //console.log("owner.address is ", owner.address);
+describe("Token Role Tests", function() {
+  it("Contract owner has minter, pauser, and default admin roles", async function() {
     expect(await dimitraToken.hasRole(id("MINTER_ROLE"), owner.address)).to.equal(true);
     expect(await dimitraToken.hasRole(id("PAUSER_ROLE"), owner.address)).to.equal(true);
-    expect(await dimitraToken.hasRole(id("BURNER_ROLE"), owner.address)).to.equal(true);
+    //expect(await dimitraToken.hasRole(id("DEFAULT_ADMIN_ROLE"), owner.address)).to.equal(true);
   })
 
-  it("Non contract owner does not have minter, pauser, burner, and admin roles", async function() {
-    //console.log("owner.address is ", account1.address);
+  it("Non contract owner does not have minter, pauser, and admin roles", async function() {
     expect(await dimitraToken.hasRole(id("MINTER_ROLE"), account1.address)).to.equal(false);
     expect(await dimitraToken.hasRole(id("PAUSER_ROLE"), account1.address)).to.equal(false);
-    expect(await dimitraToken.hasRole(id("BURNER_ROLE"), account1.address)).to.equal(false);
+    //expect(await dimitraToken.hasRole(id("DEFAULT_ADMIN_ROLE"),  account1.address)).to.equal(false);
   })
 
-
   it("Contract owner can grant minter role", async function() {
-    console.log("Balance before minting", formatEther(await dimitraToken.balanceOf(account1.address)));
+    //console.log("Balance before minting", formatEther(await dimitraToken.balanceOf(account1.address)));
     await dimitraToken.connect(owner).grantRole(id("MINTER_ROLE"), account1.address);
     await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));
-    console.log("Balance after minting", formatEther(await dimitraToken.balanceOf(account1.address)));
+    expect(await dimitraToken.balanceOf(account1.address)).to.equal(parseUnits("1000", 18));
+    //console.log("Balance after minting", formatEther(await dimitraToken.balanceOf(account1.address)));
+  })
+
+  it("Contract owner can grant minter role", async function() {
+    //console.log("Balance before minting", formatEther(await dimitraToken.balanceOf(account1.address)));
+    await dimitraToken.connect(owner).grantRole(id("MINTER_ROLE"), account1.address);
+    await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));
+    //console.log("Balance after minting", formatEther(await dimitraToken.balanceOf(account1.address)));
   })
 
   it("Non contract owner cannot grant minter role", async function() {
-    try {
-      await dimitraToken.connect(account1).grantRole(id("MINTER_ROLE"), account2.address);
-      throw new Error('Error: Granting role by non owner');
-    }
-    catch (e) {
-      console.log("e.message", e.message);
-      if (e.message && e.message === 'Error: Granting role by non owner') throw e
-     }
+    await expect(dimitraToken.connect(account1).grantRole(id("MINTER_ROLE"), account2.address)).to.be.reverted;
   });
 });
 
 describe("Token Minting Tests", function() {
-
   it("Non owner that is not MINTER_ROLE cannot mint tokens", async function() {
     const mintAmount = '1000000000000000000';
-    try {
-      await dimitraToken.connect(account1).mint(account1.address, mintAmount);
-      throw new Error('Error: Minting by non MINTER_ROLE');
-    }
-    catch (e) {
-      console.log("e.message", e.message);
-      if (e.message && e.message === 'Error: Minting by non MINTER_ROLE') throw e
-      
-    }
+    await expect(dimitraToken.connect(account1).mint(account1.address, mintAmount)).to.be.reverted;
   });
   
   it("Minted tokens can be assigned by owner to owner address", async function() {
@@ -119,39 +115,43 @@ describe("Token Minting Tests", function() {
 });
 
 describe("Token Burning Tests", function() {
-
-  it("Contract owner can burn tokens", async function() {
+  it("Contract owner can burn own tokens", async function() {
     const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
     await dimitraToken.connect(owner).burn(mintAmount);
   });
 
-  it("Non contract owner cannot burn tokens", async function() {
+  it("Non contract owner can burn own tokens", async function() {
     const mintAmount = '1000000000000000000';
     dimitraToken.connect(owner).mint(account1.address, mintAmount);
-    try {
-      await dimitraToken.connect(account1).burn(mintAmount);                             // expected error -> test succeeded
-      throw new Error('Error: Burning by non BURNER_ROLE');                              // if we get here -> test failed
-    }
-    catch (e) {
-      console.log("e.message", e.message);
-      if (e.message && e.message === 'Error: Burning by non BURNER_ROLE') throw e
-    }
+    await dimitraToken.connect(account1).burn(mintAmount);
   });
 
-  it("Contract owner can approve another account to burn tokens from owner account", async function() {
-    const mintAmount = parseUnits("10", 18);
+  it("Contract owner cannot burn tokens of others without allowance approval", async function() {
+    const mintAmount = '1000000000000000000';
+    await dimitraToken.connect(owner).mint(account1.address, mintAmount);
+    let balance = await dimitraToken.balanceOf(account1.address);
+    await expect(dimitraToken.connect(owner).burnFrom(account1.address, balance)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
+  });
+
+  it("Non contract owner cannot burn tokens of owner without allowance approval", async function() {
+    const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
     let balance = await dimitraToken.balanceOf(owner.address);
-    //console.log("balance", formatEther(balance));
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account1.address);
-    await dimitraToken.connect(owner).approve(account1.address, balance);
-    await dimitraToken.connect(account1).burnFrom(owner.address, balance);
-    //console.log("balance", formatEther(await dimitraToken.balanceOf(owner.address)));
+    await expect(dimitraToken.connect(account1).burnFrom(owner.address, balance)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
   });
 
-  it("An account can approve another account to burn its tokens", async function() {
-    const mintAmount = parseUnits("10", 18);
+  it("An account cannot burn tokens of another without allowance approval", async function() {
+    const mintAmount = '1000000000000000000';
+    await dimitraToken.connect(owner).mint(account1.address, mintAmount);
+    let balance = await dimitraToken.balanceOf(account1.address);
+    await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account2.address);
+    await expect(dimitraToken.connect(account2).burnFrom(account1.address, balance)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
+  });
+
+  it("An account can burn tokens of another if approved", async function() {
+    const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(account1.address, mintAmount);
     let balance = await dimitraToken.balanceOf(account1.address);
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account2.address);
@@ -160,11 +160,9 @@ describe("Token Burning Tests", function() {
     //console.log("balance", formatEther(await dimitraToken.balanceOf(account1.address)));
     //console.log("allowance", formatEther(await dimitraToken.allowance(account1.address, account2.address)));
   });
-
 });
 
 describe("Token Pausing Tests", function() {
-
   it("Contract owner can pause contract", async function() {
     // set balance up for transfer
     let amount = parseUnits("10", 18);
@@ -183,16 +181,9 @@ describe("Token Pausing Tests", function() {
 
     // transfer should fail while paused
     dimitraToken.connect(owner).pause();
-    try {
-      await dimitraToken.connect(account1).transfer(account2.address, amount);           // expected error -> test succeeded
-      throw new Error('Error: Error: Transfering while paused');                         // if we get here -> test failed
-      ammount = await dimitraToken.balanceOf(account2.address);
-      //console.log("Amount, formatEther(ammount));
-    }
-    catch (e) {
-      console.log("e.message", e.message);
-      if (e.message && e.message === "Error: Transfering while paused") throw e
-    }
+    await expect(dimitraToken.connect(account1).transfer(account2.address, amount)).to.be.revertedWith("ERC20Pausable: token transfer while paused");
+    ammount = await dimitraToken.balanceOf(account2.address); 
+    console.log("Amount", formatEther(ammount));
   });
 
   it("Contract owner can unpause contract", async function() {
@@ -210,44 +201,6 @@ describe("Token Pausing Tests", function() {
   });
 
   it("Non contract owner that is not PAUSER_ROLE cannot pause contract", async function() {
-    try {
-      await dimitraToken.connect(account1).pause();                                      // expected error -> test succeeded
-      throw new Error('Error: Pausing by non PAUSER_ROLE');                              // if we get here -> test failed
-    }
-    catch (e) {
-      console.log("e.message", e.message);
-      if (e.message && e.message === "Error: Pausing by non PAUSER_ROLE") throw e
-    }
+    await expect(dimitraToken.connect(account1).pause()).to.be.revertedWith("ERC20PresetMinterPauser: must have pauser role to pause");
   });
-
 });
-
-/*
-*** list of methods that may need unit testing ***
-totalSupply()
-cap()
-balanceOf(address account)
-transfer(address recipient, uint256 amount)
-allowance(address owner, address spender)
-approve(address spender, uint256 amount)
-transferFrom(address sender, address recipient, uint256 amount)
-increaseAllowance(address spender, uint256 addedValue)
-decreaseAllowance(address spender, uint256 subtractedValue)
-mint(account, amount)
-isMinter(account)
-addMinter(account)
-renounceMinter()
-totalSupply()
-balanceOf(account)
-transfer(recipient, amount)
-allowance(owner, spender)
-approve(spender, amount)
-transferFrom(sender, recipient, amount)
-increaseAllowance(spender, addedValue)
-decreaseAllowance(spender, subtractedValue)
-burn(amount)
-burnFrom(account, amount)
-paused()
-pause()
-unpause()
-*/

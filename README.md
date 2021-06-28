@@ -1,5 +1,8 @@
 # DMTRToken
 
-1. Go to Hardhat folder
-2. Run `npm install --save-dev hardhat`
-3. Run `npx hardhat test`
+1. In new folder...
+2. `git clone https://github.com/aditya520/DMTRToken`
+3. Go to `hardhat` folder
+4. `npm install`
+5. `npx hardhat test`
+
