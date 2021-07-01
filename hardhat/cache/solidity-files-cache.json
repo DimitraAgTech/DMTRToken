@@ -1,9 +1,15 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\contracts\\DimitraToken.sol": {
       "lastModificationDate": 1625171887127,
       "contentHash": "dcad81f1fae41e35e43716e8fcdd54ea",
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/contracts/DimitraToken.sol": {
+      "lastModificationDate": 1624909709100,
+      "contentHash": "6480366a64434904c8154e0a0297b4fe",
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "sourceName": "contracts/DimitraToken.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -37,8 +43,13 @@
         "DimitraToken"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\presets\\ERC20PresetMinterPauser.sol": {
       "lastModificationDate": 1624906613535,
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol": {
+      "lastModificationDate": 1624047044091,
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "contentHash": "a6530e2dcbbb51d2e748f97f14662e49",
       "sourceName": "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol",
       "solcConfig": {
@@ -77,8 +88,13 @@
         "ERC20PresetMinterPauser"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
       "lastModificationDate": 1624906613427,
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+      "lastModificationDate": 1624047044091,
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "contentHash": "715cc034a225c8fc445e2f4299111d75",
       "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
       "solcConfig": {
@@ -115,8 +131,13 @@
         "ERC20"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\ERC20Burnable.sol": {
       "lastModificationDate": 1624906613443,
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol": {
+      "lastModificationDate": 1624047044091,
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "contentHash": "279d6a0c2fd093b667febc2c4c2e6945",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol",
       "solcConfig": {
@@ -152,8 +173,13 @@
         "ERC20Burnable"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\ERC20Pausable.sol": {
       "lastModificationDate": 1624906613458,
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol": {
+      "lastModificationDate": 1624047044091,
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "contentHash": "49ab91d0e0caa17deaeafc25f32e2bb9",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol",
       "solcConfig": {
@@ -189,8 +215,13 @@
         "ERC20Pausable"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\access\\AccessControlEnumerable.sol": {
       "lastModificationDate": 1624906612255,
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/access/AccessControlEnumerable.sol": {
+      "lastModificationDate": 1624047044087,
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "contentHash": "5486abf1e4411b43527f415fbdd3d3a2",
       "sourceName": "@openzeppelin/contracts/access/AccessControlEnumerable.sol",
       "solcConfig": {
@@ -227,8 +258,13 @@
         "IAccessControlEnumerable"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
       "lastModificationDate": 1624906612454,
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1624047044087,
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "contentHash": "bc047f55d4e6dcc5a9c7ee096f530312",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -261,8 +297,13 @@
         "Context"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
       "lastModificationDate": 1624906613956,
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1624047044091,
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "contentHash": "c7492a9ab60ba083d345f893d5e0f33c",
       "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
       "solcConfig": {
@@ -295,8 +336,13 @@
         "IERC20"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
       "lastModificationDate": 1624906613965,
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+      "lastModificationDate": 1624047044091,
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "contentHash": "aa1be06992a99bb7393b26a6af3c4dfb",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
       "solcConfig": {
@@ -331,6 +377,7 @@
         "IERC20Metadata"
       ]
     },
+<<<<<<< HEAD
     "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\security\\Pausable.sol": {
       "lastModificationDate": 1624906614160,
       "contentHash": "835673b68fdeaf41b38c84e966e8630b",
@@ -371,6 +418,55 @@
       "lastModificationDate": 1624906612238,
       "contentHash": "c89562e4f5ef9b584f318a1559b5052a",
       "sourceName": "@openzeppelin/contracts/access/AccessControl.sol",
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/security/Pausable.sol": {
+      "lastModificationDate": 1624047044095,
+      "contentHash": "835673b68fdeaf41b38c84e966e8630b",
+      "sourceName": "@openzeppelin/contracts/security/Pausable.sol",
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
+      "solcConfig": {
+        "version": "0.8.0",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Pausable"
+      ]
+    },
+<<<<<<< HEAD
+    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\structs\\EnumerableSet.sol": {
+      "lastModificationDate": 1624906612772,
+      "contentHash": "212c7600a5dc9486dc7c82a82144fb88",
+      "sourceName": "@openzeppelin/contracts/utils/structs/EnumerableSet.sol",
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/access/AccessControl.sol": {
+      "lastModificationDate": 1624047044087,
+      "contentHash": "c89562e4f5ef9b584f318a1559b5052a",
+      "sourceName": "@openzeppelin/contracts/access/AccessControl.sol",
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "solcConfig": {
         "version": "0.8.0",
         "settings": {
@@ -406,10 +502,17 @@
         "IAccessControl"
       ]
     },
-    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\structs\\EnumerableSet.sol": {
-      "lastModificationDate": 1624906612772,
+<<<<<<< HEAD
+    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\Strings.sol": {
+      "lastModificationDate": 1624906614376,
+      "contentHash": "e575d915a7dbf0decd510699a7fd53dc",
+      "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/utils/structs/EnumerableSet.sol": {
+      "lastModificationDate": 1624047044087,
       "contentHash": "212c7600a5dc9486dc7c82a82144fb88",
       "sourceName": "@openzeppelin/contracts/utils/structs/EnumerableSet.sol",
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "solcConfig": {
         "version": "0.8.0",
         "settings": {
@@ -440,10 +543,17 @@
         "EnumerableSet"
       ]
     },
-    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\Strings.sol": {
-      "lastModificationDate": 1624906614376,
+<<<<<<< HEAD
+    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\ERC165.sol": {
+      "lastModificationDate": 1624906613184,
+      "contentHash": "a9a5319dff9088c6ffe757ea1c2a6729",
+      "sourceName": "@openzeppelin/contracts/utils/introspection/ERC165.sol",
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
+      "lastModificationDate": 1624047044095,
       "contentHash": "e575d915a7dbf0decd510699a7fd53dc",
       "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "solcConfig": {
         "version": "0.8.0",
         "settings": {
@@ -474,10 +584,17 @@
         "Strings"
       ]
     },
-    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\ERC165.sol": {
-      "lastModificationDate": 1624906613184,
+<<<<<<< HEAD
+    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\IERC165.sol": {
+      "lastModificationDate": 1624906613940,
+      "contentHash": "9a04322bb8f6b8f2767d8358d1d2537b",
+      "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": {
+      "lastModificationDate": 1624047044087,
       "contentHash": "a9a5319dff9088c6ffe757ea1c2a6729",
       "sourceName": "@openzeppelin/contracts/utils/introspection/ERC165.sol",
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "solcConfig": {
         "version": "0.8.0",
         "settings": {
@@ -510,8 +627,13 @@
         "ERC165"
       ]
     },
-    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\IERC165.sol": {
-      "lastModificationDate": 1624906613940,
+<<<<<<< HEAD
+    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\contracts\\Migrations.sol": {
+      "lastModificationDate": 1624906483438,
+      "contentHash": "bc5d2a325acfd4a12ab9dec54e57b59e",
+=======
+    "/home/aditya/dimitra/DMTRToken/hardhat/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": {
+      "lastModificationDate": 1624047044091,
       "contentHash": "9a04322bb8f6b8f2767d8358d1d2537b",
       "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
       "solcConfig": {
@@ -544,9 +666,10 @@
         "IERC165"
       ]
     },
-    "C:\\Users\\peter\\Desktop\\Dimitra\\DMTR\\DMTRToken\\hardhat\\contracts\\Migrations.sol": {
-      "lastModificationDate": 1624906483438,
-      "contentHash": "bc5d2a325acfd4a12ab9dec54e57b59e",
+    "/home/aditya/dimitra/DMTRToken/hardhat/contracts/Migrations.sol": {
+      "lastModificationDate": 1623991817454,
+      "contentHash": "50b3b1dc92806dc8f604fc8c5c65518f",
+>>>>>>> afb378254866da959b8353a2aa73944a5ccda766
       "sourceName": "contracts/Migrations.sol",
       "solcConfig": {
         "version": "0.8.0",
