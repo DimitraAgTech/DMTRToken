@@ -11,12 +11,12 @@ contract DimitraToken is ERC20PresetMinterPauser {
     struct LockBox {
         address beneficiary;
         uint balance;
-        uint releaseTime;
+        uint releaseTime; // in days
     }
     LockBox[] public lockBoxes; // Not a mapping by address because we need to support multiple tranches per address
 
-    event LogLockDeposit(address sender, address beneficiary, uint amount, uint releaseTime);
-    event LogLockWithdrawal(address sender, address beneficiary, uint amount, uint releaseTime);
+    event LogLockDeposit(address sender, address beneficiary, uint amount, uint releaseTimeDays);    // days - for production only
+    event LogLockWithdrawal(address sender, address beneficiary, uint amount, uint releaseTimeDays); // days - for production only
 
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
@@ -27,35 +27,13 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
-    // function lockDeposit(address beneficiary, uint amount, uint vestingDays) public { // days for production
-    //     require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-    //     LockBox memory lockBox = LockBox(beneficiary, amount, block.timestamp + vestingDays * 1 days);
-    //     lockBoxes.push(lockBox);
-    //     emit LogLockDeposit(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
-    // }
-
-    function lockDeposit(address beneficiary, uint amount, uint vestingSeconds) public { // seconds for testing only
+    function lockDeposit(address beneficiary, uint amount, uint vestingDays) public {
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        LockBox memory lockBox = LockBox(beneficiary, amount, block.timestamp + vestingSeconds * 1 seconds);
+        LockBox memory lockBox = LockBox(beneficiary, amount, block.timestamp + vestingDays * 1 days);
         lockBoxes.push(lockBox);
         emit LogLockDeposit(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
     }
 
-    // function triggerWithdrawAll() public {
-    //     require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to trigger withdraw of all matured tokens");
-    //     for (uint i = 0; i < lockBoxes.length; ++i) {
-    //         LockBox memory lockBox = lockBoxes[i];
-    //         if (lockBox.releaseTime < block.timestamp) {            // ??? should this be >= ???
-    //             transfer(lockBox.beneficiary, lockBox.balance);
-    //             emit LogLockWithdrawal(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
-    //             for (uint j = i; j<lockBoxes.length-1; j++){
-    //                 lockBoxes[j] = lockBoxes[j+1];
-    //             }
-    //             lockBoxes.pop();
-    //         }
-    //     }
-    // }
-    
     function triggerWithdrawAll() public {
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to trigger withdraw of all matured tokens");
         for (uint i = 0; i < lockBoxes.length; ++i) {
