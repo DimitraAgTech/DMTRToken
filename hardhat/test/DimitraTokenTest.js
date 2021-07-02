@@ -228,7 +228,7 @@ describe("Token Deposit Locking and Triggering Withdrawing Tests", function() {
     console.log("Balance of owner    after locking deposit but before time travel", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1 after locking deposit but before time travel", formatUnits(await dimitraToken.balanceOf(account1.address)));
 
-    // time travel 10 seconds into future
+    // time travel 10 days into future
     await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
     
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
@@ -259,14 +259,14 @@ describe("Token Deposit Locking and Triggering Withdrawing Tests", function() {
 
     // lock deposit
     let bigAmount = parseUnits("20", 18);
-    await expect(dimitraToken.connect(owner).lockDeposit(account1.address, bigAmount, 5)).to.emit(dimitraToken, 'LogLockDeposit');
+    await expect(dimitraToken.connect(owner).lockDeposit(account1.address, bigAmount, 5)).to.emit(dimitraToken, 'LogLockDeposit'); // 5 days
 
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after locking deposit but before time travel", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1 after locking deposit but before time travel", formatUnits(await dimitraToken.balanceOf(account1.address)));
 
-    // time travel 10 seconds into future
+    // time travel 10 days into future
     await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
 
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
@@ -296,8 +296,8 @@ describe("Token Deposit Locking and Triggering Withdrawing Tests", function() {
     console.log("Balance of account2 after minting but before locking deposit", formatUnits(await dimitraToken.balanceOf(account2.address)));
 
     // lock deposits
-    await expect(dimitraToken.connect(owner).lockDeposit(account1.address, amount1, 5)).to.emit(dimitraToken, 'LogLockDeposit');
-    await expect(dimitraToken.connect(owner).lockDeposit(account2.address, amount2, 6)).to.emit(dimitraToken, 'LogLockDeposit');
+    await expect(dimitraToken.connect(owner).lockDeposit(account1.address, amount1, 5)).to.emit(dimitraToken, 'LogLockDeposit'); // 5 days
+    await expect(dimitraToken.connect(owner).lockDeposit(account2.address, amount2, 6)).to.emit(dimitraToken, 'LogLockDeposit'); // 6 days
 
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
@@ -305,7 +305,7 @@ describe("Token Deposit Locking and Triggering Withdrawing Tests", function() {
     console.log("Balance of account1 after locking deposits but before time travel", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2 after locking deposits but before time travel", formatUnits(await dimitraToken.balanceOf(account2.address)));
 
-    // time travel 10 seconds into future
+    // time travel 10 days into future
     await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
 
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
