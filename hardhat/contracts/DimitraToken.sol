@@ -2,12 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
+//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.2/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"; // remix
 
 contract DimitraToken is ERC20PresetMinterPauser {
     uint private immutable _cap;
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
-    //uint public releaseTime; // ?????????
-
+  
     struct LockBox {
         address beneficiary;
         uint balance;
@@ -27,9 +27,16 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
-    function lockDeposit(address beneficiary, uint amount, uint vestingWeeks) public {
+    // function lockDeposit(address beneficiary, uint amount, uint vestingDays) public { // daysfor production
+    //     require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
+    //     LockBox memory lockBox = LockBox(beneficiary, amount, block.timestamp + vestingDays * 1 days);
+    //     lockBoxes.push(lockBox);
+    //     emit LogLockDeposit(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
+    // }
+
+    function lockDeposit(address beneficiary, uint amount, uint vestingSeconds) public { // seconds for testing only
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        LockBox memory lockBox = LockBox(beneficiary, amount, block.timestamp + vestingWeeks * 1 weeks);
+        LockBox memory lockBox = LockBox(beneficiary, amount, block.timestamp + vestingSeconds * 1 seconds);
         lockBoxes.push(lockBox);
         emit LogLockDeposit(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
     }

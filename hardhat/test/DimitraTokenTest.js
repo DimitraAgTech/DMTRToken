@@ -71,6 +71,7 @@ describe("Token Role Tests", function() {
     //console.log("Balance before minting", formatEther(await dimitraToken.balanceOf(account1.address)));
     await dimitraToken.connect(owner).grantRole(id("MINTER_ROLE"), account1.address);
     await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));
+    expect(await dimitraToken.balanceOf(account1.address)).to.equal(parseUnits("1000", 18));
     //console.log("Balance after minting", formatEther(await dimitraToken.balanceOf(account1.address)));
   })
 
@@ -92,7 +93,7 @@ describe("Token Minting Tests", function() {
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
     const balanceAfterMinting = await dimitraToken.balanceOf(owner.address);
     //console.log("balanceAfterMinting", formatEther(balanceAfterMinting));
-    expect(balanceAfterMinting).to.equal(balanceBeforeMinting + mintAmount);
+    await expect(balanceAfterMinting).to.equal(balanceBeforeMinting + mintAmount);
   });
 
   it("Minted tokens can be assigned by owner to another address", async function() {
@@ -102,7 +103,7 @@ describe("Token Minting Tests", function() {
     await dimitraToken.connect(owner).mint(account1.address, mintAmount);
     const balanceAfterMinting = await dimitraToken.balanceOf(account1.address);
     //console.log("balanceAfterMinting", formatEther(balanceAfterMinting));
-    expect(balanceAfterMinting).to.equal(balanceBeforeMinting + mintAmount);
+    await expect(balanceAfterMinting).to.equal(balanceBeforeMinting + mintAmount);
   });
 
   it("Minting tokens increments total supply accordingly", async function() {
@@ -110,7 +111,7 @@ describe("Token Minting Tests", function() {
     const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
     const totalSupplyAfterMinting = await dimitraToken.totalSupply();
-    expect(totalSupplyAfterMinting).to.equal(totalSupplyBeforeMinting + mintAmount);
+    await expect(totalSupplyAfterMinting).to.equal(totalSupplyBeforeMinting + mintAmount);
   });
 });
 
@@ -119,12 +120,14 @@ describe("Token Burning Tests", function() {
     const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
     await dimitraToken.connect(owner).burn(mintAmount);
+    expect(await dimitraToken.balanceOf(owner.address)).to.equal(0);
   });
 
   it("Non contract owner can burn own tokens", async function() {
     const mintAmount = '1000000000000000000';
     dimitraToken.connect(owner).mint(account1.address, mintAmount);
     await dimitraToken.connect(account1).burn(mintAmount);
+    expect(await dimitraToken.balanceOf(account1.address)).to.equal(0);
   });
 
   it("Contract owner cannot burn tokens of others without allowance approval", async function() {
@@ -157,6 +160,7 @@ describe("Token Burning Tests", function() {
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account2.address);
     await dimitraToken.connect(account1).approve(account2.address, balance);
     await dimitraToken.connect(account2).burnFrom(account1.address, balance);
+    expect(await dimitraToken.balanceOf(account1.address)).to.equal(0);
     //console.log("balance", formatEther(await dimitraToken.balanceOf(account1.address)));
     //console.log("allowance", formatEther(await dimitraToken.allowance(account1.address, account2.address)));
   });
@@ -196,11 +200,38 @@ describe("Token Pausing Tests", function() {
     dimitraToken.connect(owner).pause();   // we already tested this case above
     dimitraToken.connect(owner).unpause(); // see if it works now...
     await dimitraToken.connect(account1).transfer(account2.address, amount);
-    ammount = await dimitraToken.balanceOf(account2.address);
+    expect(await dimitraToken.balanceOf(account2.address)).to.equal(ammount);
     //console.log("Amount", formatEther(ammount));
   });
 
   it("Non contract owner that is not PAUSER_ROLE cannot pause contract", async function() {
     await expect(dimitraToken.connect(account1).pause()).to.be.revertedWith("ERC20PresetMinterPauser: must have pauser role to pause");
   });
+});
+
+describe("Token Deposit Locking and Triggering Withdrawing Tests", function() {
+  it("Contract owner can lock deposit to other address with zero lock time and then trigger withdraw", async function() {
+    console.log("*** Lock Box Count: ", await dimitraToken.connect(owner).getLockBoxCount());
+    console.log("*** Total Lock Box Balance: ", await dimitraToken.connect(owner).getTotalLockBoxBalance());
+
+    // create balance for locking deposit into time lock for token holder
+    let amount = parseUnits("1000", 18);
+    await dimitraToken.connect(owner).mint(owner.address, amount);
+    console.log("Balance of account1 before locking deposit", formatEther(await dimitraToken.balanceOf(account1.address)));
+    await dimitraToken.connect(owner).lockDeposit(account1.address, amount, 5); // will fully vest in 5 time units (seconds in testing)
+
+    console.log("*** Lock Box Count: ", await dimitraToken.connect(owner).getLockBoxCount());
+    console.log("*** Total Lock Box Balance: ", await dimitraToken.connect(owner).getTotalLockBoxBalance());
+
+    await network.provider.send("evm_increaseTime", [10])
+    console.log("Balance of account1 after locking deposit but before triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
+    await dimitraToken.connect(owner).triggerWithdrawAll();
+
+    console.log("*** Lock Box Count: ", await dimitraToken.connect(owner).getLockBoxCount());
+    console.log("*** Total Lock Box Balance: ", await dimitraToken.connect(owner).getTotalLockBoxBalance());
+
+    console.log("Balance of account1 after locking deposit and after triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
+    expect(await dimitraToken.balanceOf(account1.address)).to.equal(parseUnits("1000", 18));
+  });
+
 });
