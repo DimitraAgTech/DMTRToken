@@ -34,7 +34,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         emit LogLockDeposit(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
     }
 
-    function triggerWithdrawAll() public {
+    function triggerReleaseAllMatured() public {
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to trigger withdraw of all matured tokens");
         for (uint i = 0; i < lockBoxes.length; ++i) {
             if (lockBoxes[i].releaseTime <= block.timestamp && lockBoxes[i].balance > 0) {
