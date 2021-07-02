@@ -41,13 +41,32 @@ contract DimitraToken is ERC20PresetMinterPauser {
         emit LogLockDeposit(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
     }
 
+    // function triggerWithdrawAll() public {
+    //     require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to trigger withdraw of all matured tokens");
+    //     for (uint i = 0; i < lockBoxes.length; ++i) {
+    //         LockBox memory lockBox = lockBoxes[i];
+    //         if (lockBox.releaseTime < block.timestamp) {            // ??? should this be >= ???
+    //             transfer(lockBox.beneficiary, lockBox.balance);
+    //             emit LogLockWithdrawal(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
+    //             for (uint j = i; j<lockBoxes.length-1; j++){
+    //                 lockBoxes[j] = lockBoxes[j+1];
+    //             }
+    //             lockBoxes.pop();
+    //         }
+    //     }
+    // }
+    
     function triggerWithdrawAll() public {
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to trigger withdraw of all matured tokens");
         for (uint i = 0; i < lockBoxes.length; ++i) {
-            LockBox memory lockBox = lockBoxes[i];
-            if (lockBox.releaseTime < block.timestamp) {
-                transfer(lockBox.beneficiary, lockBox.balance);
-                emit LogLockWithdrawal(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
+            if (lockBoxes[i].releaseTime <= block.timestamp && lockBoxes[i].balance > 0) {
+                transfer(lockBoxes[i].beneficiary, lockBoxes[i].balance);
+                emit LogLockWithdrawal(msg.sender, lockBoxes[i].beneficiary, lockBoxes[i].balance, lockBoxes[i].releaseTime);
+                lockBoxes[i].balance = 0;
+            }
+        }
+        for (uint i = 0; i < lockBoxes.length; ++i) {
+            if (lockBoxes[i].balance == 0) {
                 for (uint j = i; j<lockBoxes.length-1; j++){
                     lockBoxes[j] = lockBoxes[j+1];
                 }
