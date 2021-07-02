@@ -210,28 +210,96 @@ describe("Token Pausing Tests", function() {
 });
 
 describe("Token Deposit Locking and Triggering Withdrawing Tests", function() {
-  it("Contract owner can lock deposit to other address with zero lock time and then trigger withdraw", async function() {
-    console.log("*** Lock Box Count: ", await dimitraToken.connect(owner).getLockBoxCount());
-    console.log("*** Total Lock Box Balance: ", await dimitraToken.connect(owner).getTotalLockBoxBalance());
+  it("Contract owner can lock a deposit to another address and then trigger its withdraw", async function() {
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
 
-    // create balance for locking deposit into time lock for token holder
+    // mint owner balance for locking deposit into time lock for token holder
     let amount = parseUnits("1000", 18);
     await dimitraToken.connect(owner).mint(owner.address, amount);
+    console.log("Balance of owner before locking deposit", formatEther(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1 before locking deposit", formatEther(await dimitraToken.balanceOf(account1.address)));
-    await dimitraToken.connect(owner).lockDeposit(account1.address, amount, 5); // will fully vest in 5 time units (seconds in testing)
 
-    console.log("*** Lock Box Count: ", await dimitraToken.connect(owner).getLockBoxCount());
-    console.log("*** Total Lock Box Balance: ", await dimitraToken.connect(owner).getTotalLockBoxBalance());
+    // lock deposit
+    await expect(dimitraToken.connect(owner).lockDeposit(account1.address, amount, 5)).to.emit(dimitraToken, 'LogLockDeposit');
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
 
+    // time travel to future
     await network.provider.send("evm_increaseTime", [10])
-    console.log("Balance of account1 after locking deposit but before triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
+    console.log("Balance of owner after  time travel to future but before triggering withdraws", formatEther(await dimitraToken.balanceOf(owner.address)));
+    console.log("Balance of account1 after  time travel to future but before triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
+
+    // trigger single withdraw
     await dimitraToken.connect(owner).triggerWithdrawAll();
-
-    console.log("*** Lock Box Count: ", await dimitraToken.connect(owner).getLockBoxCount());
-    console.log("*** Total Lock Box Balance: ", await dimitraToken.connect(owner).getTotalLockBoxBalance());
-
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of account1 after locking deposit and after triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
-    expect(await dimitraToken.balanceOf(account1.address)).to.equal(parseUnits("1000", 18));
+
+    expect(await dimitraToken.balanceOf(account1.address)).to.equal(amount);
   });
 
+  it("Contract owner can lock a deposit to another address and but canot trigger its withdraw if NSF", async function() {
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+
+    // mint owner balance that is too small for locking deposit into time lock for token holder
+    let smallAmount = parseUnits("10", 18);
+    await dimitraToken.connect(owner).mint(owner.address, smallAmount);
+    console.log("Balance of owner before locking deposit", formatEther(await dimitraToken.balanceOf(owner.address)));
+    console.log("Balance of account1 before locking deposit", formatEther(await dimitraToken.balanceOf(account1.address)));
+
+    // lock deposit
+    let bigAmount = parseUnits("20", 18);
+    await expect(dimitraToken.connect(owner).lockDeposit(account1.address, bigAmount, 5)).to.emit(dimitraToken, 'LogLockDeposit');
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+
+    // time travel to future
+    await network.provider.send("evm_increaseTime", [10])
+    console.log("Balance of owner after  time travel to future but before triggering withdraws", formatEther(await dimitraToken.balanceOf(owner.address)));
+    console.log("Balance of account1 after  time travel to future but before triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
+
+    // trigger single withdraw
+    await expect(dimitraToken.connect(owner).triggerWithdrawAll()).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+    console.log("Balance of account1 after locking deposit and after triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
+  });
+  
+  it("Contract owner can lock multiple deposits to other addresses and then trigger their withdraw", async function() {
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+
+    // mint owner balance for locking deposits into time lock for token holder
+    let amount1 = 1000;
+    let amount2 = 2000;
+    await dimitraToken.connect(owner).mint(owner.address, amount1 + amount2);
+    console.log("Balance of owner before locking deposit", formatEther(await dimitraToken.balanceOf(owner.address)));
+    console.log("Balance of account1 before locking deposit", formatEther(await dimitraToken.balanceOf(account1.address)));
+    console.log("Balance of account2 before locking deposit", formatEther(await dimitraToken.balanceOf(account2.address)));
+
+    // lock deposits
+    await expect(dimitraToken.connect(owner).lockDeposit(account1.address, amount1, 5)).to.emit(dimitraToken, 'LogLockDeposit');
+    await expect(dimitraToken.connect(owner).lockDeposit(account2.address, amount2, 6)).to.emit(dimitraToken, 'LogLockDeposit');
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+
+    // time travel to future
+    await network.provider.send("evm_increaseTime", [10])
+    console.log("Balance of owner after  time travel to future but before triggering withdraws", formatEther(await dimitraToken.balanceOf(owner.address)));
+    console.log("Balance of account1 after  time travel to future but before triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
+    console.log("Balance of account2 after  time travel to future but before triggering withdraws", formatEther(await dimitraToken.balanceOf(account2.address)));
+
+    // trigger multiple withdraw
+    await dimitraToken.connect(owner).triggerWithdrawAll();
+    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+    console.log("Balance of account1 after locking deposit and after triggering withdraws", formatEther(await dimitraToken.balanceOf(account1.address)));
+    console.log("Balance of account2 after locking deposit and after triggering withdraws", formatEther(await dimitraToken.balanceOf(account2.address)));
+
+    expect(await dimitraToken.balanceOf(account1.address)).to.equal(amount1);
+    expect(await dimitraToken.balanceOf(account2.address)).to.equal(amount1); // ????????????????????????????????? FAIL ?????????????????????????????????
+  });
+    
 });

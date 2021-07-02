@@ -27,7 +27,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
-    // function lockDeposit(address beneficiary, uint amount, uint vestingDays) public { // daysfor production
+    // function lockDeposit(address beneficiary, uint amount, uint vestingDays) public { // days for production
     //     require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
     //     LockBox memory lockBox = LockBox(beneficiary, amount, block.timestamp + vestingDays * 1 days);
     //     lockBoxes.push(lockBox);
