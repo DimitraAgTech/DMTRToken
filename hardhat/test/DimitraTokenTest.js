@@ -269,6 +269,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
 
     // time travel 10 days into future
     await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
+    await network.provider.send("evm_mine"); // force block ti be mined
 
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
@@ -332,6 +333,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     // time travel 10 days into future
     console.log("\nTime travel 10 days into future\n-------------------------------------");
     await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
+    await network.provider.send("evm_mine"); // force block ti be mined
 
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());

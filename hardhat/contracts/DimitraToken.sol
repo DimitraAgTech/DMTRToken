@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 //import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.2/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"; // remix
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 contract DimitraToken is ERC20PresetMinterPauser {
     uint private immutable _cap;
@@ -74,22 +74,20 @@ contract DimitraToken is ERC20PresetMinterPauser {
     function getLockBoxMaturedCount() public view returns (uint) {
         uint lockBoxMaturedCount = 0;
         for (uint i = 0; i < lockBoxes.length; i++) {
-            console.log(">>>>>>>>>>>> %s", block.timestamp);
-            console.log(">>>>>>>>>>>> %s", lockBoxes[i].releaseTime);
-            if (block.timestamp >= lockBoxes[i].releaseTime) {            // *** WRONG *** block.timestamp does not seem to increase after time travel
+            if (block.timestamp >= lockBoxes[i].releaseTime) {
                 lockBoxMaturedCount += 1;
             }
         }
-        return lockBoxMaturedCount;                                       // *** WRONG *** always returns 0
+        return lockBoxMaturedCount;
     }
 
     function getTotalLockBoxMaturedBalance() public view returns (uint) {
         uint totalLockBoxMaturedBalance = 0;
         for (uint i = 0; i < lockBoxes.length; i++) {
-            if (block.timestamp >= lockBoxes[i].releaseTime) {            // *** WRONG *** block.timestamp does not seem to increase after time travel
+            if (block.timestamp >= lockBoxes[i].releaseTime) {
                 totalLockBoxMaturedBalance += lockBoxes[i].balance;
             }
         }
-        return totalLockBoxMaturedBalance;                                // *** WRONG *** always returns 0
+        return totalLockBoxMaturedBalance;
     }
 }
