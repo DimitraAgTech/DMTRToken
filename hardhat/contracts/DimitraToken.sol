@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 //import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.2/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"; // remix
 
+import "hardhat/console.sol";
+
 contract DimitraToken is ERC20PresetMinterPauser {
     uint private immutable _cap;
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
@@ -16,7 +18,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
     LockBox[] public lockBoxes; // Not a mapping by address because we need to support multiple tranches per address
 
     event LogLockDeposit(address sender, address beneficiary, uint amount, uint releaseTimeDays);    // days - for production only
-    event LogLockWithdrawal(address sender, address beneficiary, uint amount, uint releaseTimeDays); // days - for production only
+    event LogLockRelease(address sender, address beneficiary, uint amount, uint releaseTimeDays); // days - for production only
 
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
@@ -36,11 +38,11 @@ contract DimitraToken is ERC20PresetMinterPauser {
     }
 
     function triggerReleaseAllMatured() public {
-        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to trigger withdraw of all matured tokens");
+        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to trigger Release of all matured tokens");
         for (uint i = 0; i < lockBoxes.length; i++) {
             if (block.timestamp >= lockBoxes[i].releaseTime) {
                 transfer(lockBoxes[i].beneficiary, lockBoxes[i].balance);
-                emit LogLockWithdrawal(msg.sender, lockBoxes[i].beneficiary, lockBoxes[i].balance, lockBoxes[i].releaseTime);
+                emit LogLockRelease(msg.sender, lockBoxes[i].beneficiary, lockBoxes[i].balance, lockBoxes[i].releaseTime);
                 lockBoxes[i].balance = 0;
             }
         }
@@ -69,23 +71,25 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return totalLockBoxBalance;
     }
 
-    function getLockBoxMaturedCount() public view returns (uint) {        // ???? return is wrong
+    function getLockBoxMaturedCount() public view returns (uint) {
         uint lockBoxMaturedCount = 0;
         for (uint i = 0; i < lockBoxes.length; i++) {
-            if (block.timestamp >= lockBoxes[i].releaseTime) {
+            console.log(">>>>>>>>>>>> %s", block.timestamp);
+            console.log(">>>>>>>>>>>> %s", lockBoxes[i].releaseTime);
+            if (block.timestamp >= lockBoxes[i].releaseTime) {            // *** WRONG *** block.timestamp does not seem to increase after time travel
                 lockBoxMaturedCount += 1;
             }
         }
-        return lockBoxMaturedCount;
+        return lockBoxMaturedCount;                                       // *** WRONG *** always returns 0
     }
 
-    function getTotalLockBoxMaturedBalance() public view returns (uint) { // ???? return is wrong
+    function getTotalLockBoxMaturedBalance() public view returns (uint) {
         uint totalLockBoxMaturedBalance = 0;
         for (uint i = 0; i < lockBoxes.length; i++) {
-            if (block.timestamp >= lockBoxes[i].releaseTime) {
+            if (block.timestamp >= lockBoxes[i].releaseTime) {            // *** WRONG *** block.timestamp does not seem to increase after time travel
                 totalLockBoxMaturedBalance += lockBoxes[i].balance;
             }
         }
-        return totalLockBoxMaturedBalance;
+        return totalLockBoxMaturedBalance;                                // *** WRONG *** always returns 0
     }
 }
