@@ -2,9 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
-//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.2/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"; // remix
-
-//import "hardhat/console.sol";
 
 contract DimitraToken is ERC20PresetMinterPauser {
     uint private immutable _cap;
