@@ -223,6 +223,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     // lock deposit
     await expect(dimitraToken.connect(owner).lockDeposit(account1.address, amount, 5)).to.emit(dimitraToken, 'LogLockDeposit'); // 5 days
 
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after locking deposit but before time travel", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -230,8 +231,9 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
 
     // time travel 10 days into future
     await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
-    await network.provider.send("evm_mine"); // force block ti be mined
+    await network.provider.send("evm_mine"); // force block to be mined
     
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after time travel but before triggering release", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -240,6 +242,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     // trigger release
     await dimitraToken.connect(owner).triggerReleaseAllMatured();
 
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after triggering release", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -262,6 +265,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     let bigAmount = parseUnits("20", 18);
     await expect(dimitraToken.connect(owner).lockDeposit(account1.address, bigAmount, 5)).to.emit(dimitraToken, 'LogLockDeposit'); // 5 days
 
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after locking deposit but before time travel", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -271,6 +275,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
     await network.provider.send("evm_mine"); // force block ti be mined
 
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after time travel but before triggering release", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -279,6 +284,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     // trigger release
     await expect(dimitraToken.connect(owner).triggerReleaseAllMatured()).to.be.revertedWith("ERC20: transfer amount exceeds balance");
     
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after triggering release", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -288,6 +294,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     let sufficientAmount = parseUnits("10", 18);
     await dimitraToken.connect(owner).mint(owner.address, sufficientAmount);
 
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after minting sufficient additional deposit", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -296,6 +303,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     // trigger release
     await dimitraToken.connect(owner).triggerReleaseAllMatured();
 
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("Balance of owner    after second triggering release", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -322,6 +330,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     await expect(dimitraToken.connect(owner).lockDeposit(account1.address, amount1, 5)).to.emit(dimitraToken, 'LogLockDeposit'); // 5 days
     await expect(dimitraToken.connect(owner).lockDeposit(account2.address, amount2, 6)).to.emit(dimitraToken, 'LogLockDeposit'); // 6 days
 
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("*** Lock Box Matured Count: ",         await (await dimitraToken.connect(owner).getLockBoxMaturedCount()).toString());
@@ -335,6 +344,7 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
     await network.provider.send("evm_mine"); // force block ti be mined
 
+    console.log("\n");
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
     console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
     console.log("*** Lock Box Matured Count: ",         await (await dimitraToken.connect(owner).getLockBoxMaturedCount()).toString());
@@ -347,9 +357,10 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     console.log("\nTrigger multiple releasees\n-------------------------------------");
     await dimitraToken.connect(owner).triggerReleaseAllMatured();
 
-    console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
-    console.log("*** Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
-    console.log("***WRONG*** Lock Box Matured Count: ",         await (await dimitraToken.connect(owner).getLockBoxMaturedCount()).toString());        // ???? return is wrong
+    console.log("\n");
+    console.log("*** Lock Box Count: ",await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
+    console.log("*** Total Lock Box Balance: ",await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+    console.log("***WRONG*** Lock Box Matured Count: ", await (await dimitraToken.connect(owner).getLockBoxMaturedCount()).toString());        // ???? return is wrong
     console.log("***WRONG*** Total Lock Box Matured Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxMaturedBalance()).toString()); // ???? return is wrong
     console.log("Balance of owner    after triggering releases", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1 after triggering releases", formatUnits(await dimitraToken.balanceOf(account1.address)));
