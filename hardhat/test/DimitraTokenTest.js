@@ -444,8 +444,8 @@ describe("Token Deposit Locking and Triggering Releasing Tests", function() {
     console.log("Balance of account3 after locking deposits but before time travel", formatUnits(await dimitraToken.balanceOf(account3.address)));
     console.log("Balance of account4 after locking deposits but before time travel", formatUnits(await dimitraToken.balanceOf(account4.address)));
 
-    // trigger multiple releases for 1st tranche
-    console.log("\nTrigger multiple releases for 1st tranche\n-------------------------------------");
+    // trigger multiple releases for 2nd tranche
+    console.log("\nTrigger multiple releases for 2nd tranche\n-------------------------------------");
     await dimitraToken.connect(owner).triggerReleaseAllMatured();
 
     console.log("*** Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
