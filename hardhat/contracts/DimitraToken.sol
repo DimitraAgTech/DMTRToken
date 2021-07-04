@@ -2,10 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract DimitraToken is ERC20PresetMinterPauser {
-    using SafeMath for uint;
     uint private immutable _cap;
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
   
@@ -14,6 +12,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         uint balance;
         uint releaseTime; // in days
     }
+
     LockBox[] public lockBoxes; // Not a mapping by address because we need to support multiple tranches per address
     uint public LockBoxBalance;
 
@@ -29,6 +28,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
+
     function lockDeposit(address beneficiary, uint amount, uint vestingDays) public {
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
         require(amount > 0 && vestingDays > 0);
@@ -37,6 +37,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
         LockBoxBalance += amount;
         emit LogLockDeposit(msg.sender, lockBox.beneficiary, lockBox.balance, lockBox.releaseTime);
     }
+
+
 
     function triggerReleaseAllMatured() public {
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to trigger Release of all matured tokens");
@@ -48,17 +50,17 @@ contract DimitraToken is ERC20PresetMinterPauser {
                 LockBoxBalance -= lockBoxes[i].balance;
             }
         }
-        // for (uint i = 0; i < lockBoxes.length; i++) {
-        //     if (lockBoxes[i].balance == 0) {
-        //         for (uint j = i; j < lockBoxes.length-1; j++){
-        //             lockBoxes[j] = lockBoxes[j+1];
-        //         }
-        //         lockBoxes.pop();
-        //     }
-        //     if (lockBoxes.length == 1 && lockBoxes[0].balance == 0) { // single last element is edge case
-        //         lockBoxes.pop();
-        //     }
-        // }
+        for (uint i = 0; i < lockBoxes.length; i++) {
+            if (lockBoxes[i].balance == 0) {
+                for (uint j = i; j < lockBoxes.length-1; j++){
+                    lockBoxes[j] = lockBoxes[j+1];
+                }
+                lockBoxes.pop();
+            }
+            if (lockBoxes.length == 1 && lockBoxes[0].balance == 0) { // single last element is edge case
+                lockBoxes.pop();
+            }
+        }
     }
 
     function getLockBoxCount() public view returns (uint) {
