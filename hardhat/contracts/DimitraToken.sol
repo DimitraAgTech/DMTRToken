@@ -48,17 +48,17 @@ contract DimitraToken is ERC20PresetMinterPauser {
                 LockBoxBalance -= lockBoxes[i].balance;
             }
         }
-        for (uint i = 0; i < lockBoxes.length; i++) {
-            if (lockBoxes[i].balance == 0) {
-                for (uint j = i; j < lockBoxes.length-1; j++){
-                    lockBoxes[j] = lockBoxes[j+1];
-                }
-                lockBoxes.pop();
-            }
-            if (lockBoxes.length == 1 && lockBoxes[0].balance == 0) { // single last element is edge case
-                lockBoxes.pop();
-            }
-        }
+        // for (uint i = 0; i < lockBoxes.length; i++) {
+        //     if (lockBoxes[i].balance == 0) {
+        //         for (uint j = i; j < lockBoxes.length-1; j++){
+        //             lockBoxes[j] = lockBoxes[j+1];
+        //         }
+        //         lockBoxes.pop();
+        //     }
+        //     if (lockBoxes.length == 1 && lockBoxes[0].balance == 0) { // single last element is edge case
+        //         lockBoxes.pop();
+        //     }
+        // }
     }
 
     function getLockBoxCount() public view returns (uint) {
