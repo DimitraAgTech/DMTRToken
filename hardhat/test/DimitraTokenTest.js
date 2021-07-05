@@ -83,12 +83,26 @@ describe("Token Role Tests", function() {
 });
 
 describe("Token Minting Tests", function() {
-  it("Non owner that is not MINTER_ROLE cannot mint tokens", async function() {
-    const mintAmount = '1000000000000000000';
-    await expect(dimitraToken.connect(account1).mint(account1.address, mintAmount)).to.be.reverted;
+  it("Can mint tokens up to cap", async function() {
+    const mintAmount = await dimitraToken.cap();
+    await dimitraToken.connect(owner).mint(owner.address, mintAmount);
+    await expect(await dimitraToken.totalSupply()).to.equal(mintAmount);
   });
-  
-  it("Minted tokens can be assigned by owner to owner address", async function() {
+
+  it("Cannot mint tokens more than cap", async function() {
+    const mintAmount = await dimitraToken.cap()+1;
+    await expect(dimitraToken.connect(owner).mint(owner.address, mintAmount)).to.be.revertedWith("DimitraToken: cap exceeded");
+    });
+
+  it("Minting tokens increments total supply accordingly", async function() {
+    const totalSupplyBeforeMinting = await dimitraToken.totalSupply();
+    const mintAmount = '1000000000000000000';
+    await dimitraToken.connect(owner).mint(owner.address, mintAmount);
+    const totalSupplyAfterMinting = await dimitraToken.totalSupply();
+    await expect(totalSupplyAfterMinting).to.equal(totalSupplyBeforeMinting + mintAmount);
+  });
+
+  it("Owner can mint tokens to own address", async function() {
     const mintAmount = '1000000000000000000';
     const balanceBeforeMinting = await dimitraToken.balanceOf(owner.address);
     //console.log("balanceBeforeMinting", formatUnits(balanceBeforeMinting));
@@ -98,7 +112,7 @@ describe("Token Minting Tests", function() {
     await expect(balanceAfterMinting).to.equal(balanceBeforeMinting + mintAmount);
   });
 
-  it("Minted tokens can be assigned by owner to another address", async function() {
+  it("Owner can mint tokens to another address", async function() {
     const mintAmount = '1000000000000000000';
     const balanceBeforeMinting = await dimitraToken.balanceOf(account1.address);
     //console.log("balanceBeforeMinting", formatUnits(balanceBeforeMinting));
@@ -108,12 +122,9 @@ describe("Token Minting Tests", function() {
     await expect(balanceAfterMinting).to.equal(balanceBeforeMinting + mintAmount);
   });
 
-  it("Minting tokens increments total supply accordingly", async function() {
-    const totalSupplyBeforeMinting = await dimitraToken.totalSupply();
+  it("Non owner that is not MINTER_ROLE cannot mint tokens", async function() {
     const mintAmount = '1000000000000000000';
-    await dimitraToken.connect(owner).mint(owner.address, mintAmount);
-    const totalSupplyAfterMinting = await dimitraToken.totalSupply();
-    await expect(totalSupplyAfterMinting).to.equal(totalSupplyBeforeMinting + mintAmount);
+    await expect(dimitraToken.connect(account1).mint(account1.address, mintAmount)).to.be.reverted;
   });
 });
 
