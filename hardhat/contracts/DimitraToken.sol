@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
-//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.2/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"; // remix
 
 import "hardhat/console.sol";
 
@@ -73,15 +72,15 @@ contract DimitraToken is ERC20PresetMinterPauser  {
     }
 
     function getTotalLockBoxBalance() public returns (uint) {
+        uint totalLockBoxBalance = 0;
         for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
             if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
                 lockBoxes[i] = lockBoxes[lockBoxes.length-1];
                 lockBoxes.pop();
             }
-        }
-        uint totalLockBoxBalance = 0;
-        for (uint i = 0; i < lockBoxes.length; i++) {
-            totalLockBoxBalance += lockBoxes[i].amount;
+            else {
+                totalLockBoxBalance += lockBoxes[i].amount;
+            }
         }
         return totalLockBoxBalance;
     }
