@@ -41,10 +41,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
     function transfer(address recipient, uint256 amount) public override returns (bool) { // only works if sender has sufficient released tokens
         for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
             if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
-                if (lockBoxes.length > 0) {
-                    lockBoxes[i] = lockBoxes[lockBoxes.length-1];
-                    lockBoxes.pop();
-                }
+                lockBoxes[i] = lockBoxes[lockBoxes.length-1];
+                lockBoxes.pop();
             }
         }
         address sender = _msgSender();
