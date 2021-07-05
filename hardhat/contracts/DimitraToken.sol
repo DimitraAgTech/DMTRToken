@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"
 
 import "hardhat/console.sol";
 
-contract DimitraToken is ERC20PresetMinterPauser {
+contract DimitraToken is ERC20PresetMinterPauser  {
     uint private immutable _cap;
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
   
     struct LockBox {
         address beneficiary;
-        uint lockAmount;
+        uint amount;
         uint releaseTimeStamp; // uint256 value in seconds since the epoch when lock is released
     }
 
@@ -29,13 +29,18 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
-    function issueLockedTokens(address recipient, uint lockAmount, uint vestingDays) public {
+    function _mint(address account, uint256 amount) internal virtual override {
+        require(totalSupply() + amount <= cap(), "DimitraToken: cap exceeded");
+        super._mint(account, amount);
+    }
+
+    function issueLockedTokens(address recipient, uint amount, uint vestingDays) public {
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
         uint releaseTimeStamp = block.timestamp + vestingDays * 1 days;
-        LockBox memory lockBox = LockBox(recipient, lockAmount, releaseTimeStamp);
+        LockBox memory lockBox = LockBox(recipient, amount, releaseTimeStamp);
         lockBoxes.push(lockBox);
-        transfer(recipient, lockAmount);
-        emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTimeStamp);
+        transfer(recipient, amount);
+        emit LogIssueLockedTokens(msg.sender, recipient, amount, releaseTimeStamp);
     }
 
     function transfer(address recipient, uint256 amount) public override returns (bool) { // only works if sender has sufficient released tokens
@@ -46,10 +51,10 @@ contract DimitraToken is ERC20PresetMinterPauser {
             }
         }
         address sender = _msgSender();
-        uint availableBalanceOfSender = balanceOf(sender); // optimistic so we have to subtract all locked tokens
-        for (uint i = 0; i < lockBoxes.length; i++) { // see if it is possible
+        uint availableBalanceOfSender = balanceOf(sender); // optimistic so we have to subtract locked tokens
+        for (uint i = 0; i < lockBoxes.length; i++) {
             if (sender == lockBoxes[i].beneficiary) {
-                availableBalanceOfSender -= lockBoxes[i].lockAmount;
+                availableBalanceOfSender -= lockBoxes[i].amount;
                 require(availableBalanceOfSender >= amount, "DimitraToken: transfer amount exceeds balance"); // did not work out
             }
         }
@@ -57,14 +62,26 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return true;
     }
 
-    function getLockBoxCount() public view returns (uint) {
+    function getLockBoxCount() public returns (uint) {
+        for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
+            if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
+                lockBoxes[i] = lockBoxes[lockBoxes.length-1];
+                lockBoxes.pop();
+            }
+        }
         return lockBoxes.length;
     }
 
-    function getTotalLockBoxBalance() public view returns (uint) {
+    function getTotalLockBoxBalance() public returns (uint) {
+        for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
+            if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
+                lockBoxes[i] = lockBoxes[lockBoxes.length-1];
+                lockBoxes.pop();
+            }
+        }
         uint totalLockBoxBalance = 0;
         for (uint i = 0; i < lockBoxes.length; i++) {
-            totalLockBoxBalance += lockBoxes[i].lockAmount;
+            totalLockBoxBalance += lockBoxes[i].amount;
         }
         return totalLockBoxBalance;
     }
