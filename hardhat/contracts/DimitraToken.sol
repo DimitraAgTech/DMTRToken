@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
+//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.2/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"; // remix
 
 import "hardhat/console.sol";
 
@@ -33,17 +34,17 @@ contract DimitraToken is ERC20PresetMinterPauser  {
         super._mint(account, amount);
     }
 
-    function issueLockedTokens(address recipient, uint amount, uint vestingDays) public {
-        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        uint releaseTimeStamp = block.timestamp + vestingDays * 1 days;
+    function issueLockedTokens(address recipient, uint amount, uint releaseTimeStamp) public {
+        address sender = _msgSender();
+        require(hasRole(ISSUER_ROLE, sender), "DimitraToken: must have issuer role to issue locked tokens");
         LockBox memory lockBox = LockBox(recipient, amount, releaseTimeStamp);
         lockBoxes.push(lockBox);
-        transfer(recipient, amount);
+        _transfer(sender, recipient, amount);
         emit LogIssueLockedTokens(msg.sender, recipient, amount, releaseTimeStamp);
     }
 
     function transfer(address recipient, uint256 amount) public override returns (bool) { // only works if sender has sufficient released tokens
-        for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
+        for (uint i = 0; i < lockBoxes.length; i++) { // delete all expired locks
             if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
                 lockBoxes[i] = lockBoxes[lockBoxes.length-1];
                 lockBoxes.pop();
@@ -61,27 +62,21 @@ contract DimitraToken is ERC20PresetMinterPauser  {
         return true;
     }
 
-    function getLockBoxCount() public returns (uint) {
-        for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
-            if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
-                lockBoxes[i] = lockBoxes[lockBoxes.length-1];
-                lockBoxes.pop();
-            }
-        }
+    function getLockBoxCount() public view returns (uint) {
         return lockBoxes.length;
     }
 
-    function getTotalLockBoxBalance() public returns (uint) {
+    function getTotalLockBoxBalance() public view returns (uint) {
         uint totalLockBoxBalance = 0;
         for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
-            if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
-                lockBoxes[i] = lockBoxes[lockBoxes.length-1];
-                lockBoxes.pop();
-            }
-            else {
+            if (block.timestamp < lockBoxes[i].releaseTimeStamp) {
                 totalLockBoxBalance += lockBoxes[i].amount;
             }
         }
         return totalLockBoxBalance;
+    }
+
+    function getBlockTimeStamp() public view returns (uint) {
+        return block.timestamp;
     }
 }
