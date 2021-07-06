@@ -245,6 +245,8 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     await expect(dimitraToken.connect(owner).issueLockedTokens(account1.address, lockedTokenAmount, releaseDate107)).to.emit(dimitraToken, 'LogIssueLockedTokens'); // 10th July
     console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
+    console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+    console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
     let expectedBalance350 = parseUnits("350",18);
     expect(await dimitraToken.balanceOf(account1.address)).to.equal(expectedBalance350);
@@ -255,6 +257,8 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     await dimitraToken.connect(account1).transfer(account2.address,transferAmount50);
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
+    console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+    console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(transferAmount50);
 
@@ -266,6 +270,8 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
+    console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+    console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(transferAmount50);
     
@@ -281,6 +287,8 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
+    console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+    console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
     let expectedBalance200 = parseUnits("200",18);
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(expectedBalance200);
 

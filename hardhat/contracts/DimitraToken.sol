@@ -71,13 +71,13 @@ contract DimitraToken is ERC20PresetMinterPauser {
     }
 
     function getLockedBalance(address sender) public view returns (uint){
-        uint totalLockBoxBalance = 0;
+        uint userLockBoxBalance = 0;
         uint[] memory releaseTimes = userReleaseTime[sender];
         uint arrLength = releaseTimes.length;
          if(arrLength != 0){
             for (uint i = 0; i < arrLength; i++){
                 if(block.timestamp >= releaseTimes[i]){ // There can be a possibility where user has not released it using transfer function
-                    totalLockBoxBalance += LockBoxMap[sender][releaseTimes[i]];
+                    userLockBoxBalance += LockBoxMap[sender][releaseTimes[i]];
                 }
             }
          }
