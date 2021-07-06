@@ -226,7 +226,6 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
 
     let lockedTokenAmount = parseUnits("200",18);
     
-
     console.log("\nAfter mint but before issue locked tokens\n--------------------------------------------");
 
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
