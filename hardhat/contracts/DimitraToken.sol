@@ -31,12 +31,19 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
-    function issueLockedTokens(address recipient, uint lockAmount, uint vestingDays) public {
+    function issueLockedTokens(address recipient, uint lockAmount, uint matureDate) public { // Send the mature date by calculating if from the FrontEnd
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        uint releaseTimeStamp = block.timestamp + vestingDays * 1 days;
-        LockBoxMap[recipient][releaseTimeStamp] += lockAmount;
+        // uint releaseTimeStamp = block.timestamp + vestingDays * 1 days;
+        LockBoxMap[recipient][matureDate] += lockAmount;
+        console.log("LockBoxMap is ",LockBoxMap);
         emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTimeStamp);
         _transfer(_msgSender(), recipient, lockAmount);
+    }
+
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override(ERC20PresetMinterPauser) {
+        super._beforeTokenTransfer(from, to, amount);
+
+        require(LockBoxMap[from]);
     }
 
     // function transfer(address recipient, uint256 amount) public override returns (bool) { // only works if sender has sufficient released tokens
