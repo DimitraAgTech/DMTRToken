@@ -66,6 +66,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         }
 
         require(balanceOf(sender) - lockedAmount >= amount, "DimitraToken: Insufficient balance");
+        _transfer(_msgSender(), recipient, amount);
     }
 
 
