@@ -218,6 +218,7 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     // owner mints initial balance for issuing locked tokens
     console.log("\nMinting 1000 tokens");
     let amount = parseUnits("1000", 18);
+    let releaseDate =1625715051;
     
 
     console.log("\nAfter mint but before issue locked tokens\n--------------------------------------------");
@@ -231,20 +232,24 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
 
     console.log("\nAfter transferring locked tokens to account1\n--------------------------------------------");
     // issue locked tokens
-    await expect(dimitraToken.connect(owner).issueLockedTokens(account1.address, amount, 5)).to.emit(dimitraToken, 'LogIssueLockedTokens'); // 5 vesting days
+    await expect(dimitraToken.connect(owner).issueLockedTokens(account1.address, amount, releaseDate)).to.emit(dimitraToken, 'LogIssueLockedTokens'); // 5 vesting days
     expect(await dimitraToken.balanceOf(account1.address)).to.equal(amount);
 
     console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
-
-
-    console.log("\nAfter transferring locked tokens to account1 to account2 before vesting period\n--------------------------------------------");
     
-    await dimitraToken.connect(account1).transfer(account2.address,amount);
-    console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
-    console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
-    console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
+    // console.log("LockBoxMap is ",dimitraToken.LockBoxMap(account1.address)(releaseDate));
+    console.log("isLocked is ",await dimitraToken.isLocked(account1.address));
+    // console.log("userReleaseTime is ",await dimitraToken.userReleaseTime(account1.address));
+
+
+    // console.log("\nAfter transferring locked tokens to account1 to account2 before vesting period\n--------------------------------------------");
+    
+    // await dimitraToken.connect(account1).transfer(account2.address,amount);
+    // console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
+    // console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
+    // console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
 
   });
     // // try to transfer tokens that are not yet released
