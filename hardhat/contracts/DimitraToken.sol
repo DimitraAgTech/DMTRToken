@@ -12,6 +12,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
     mapping (address => mapping(uint => uint)) public LockBoxMap; // Mapping of user => vestingDay => amount
     mapping (address => uint[]) public userReleaseTime; // user => vestingDays
     uint[] updatedReleaseTimes;
+    uint totalLockBoxBalance;
 
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTimeStamp);
 
@@ -29,12 +30,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
         require(releaseTimeStamp >= block.timestamp + 86400); // release time stamo must be at least 24 hours from now
 
         LockBoxMap[recipient][releaseTimeStamp] += lockAmount;
-
+        totalLockBoxBalance += lockAmount;
         userReleaseTime[recipient].push(releaseTimeStamp);
-
-        // console.log("LockBoxMap is ",LockBoxMap);
-        // console.log("isLocked is ",isLocked);
-        // console.log("userReleaseTime is ",userReleaseTime);
 
         emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTimeStamp);
         _transfer(_msgSender(), recipient, lockAmount);
@@ -48,12 +45,12 @@ contract DimitraToken is ERC20PresetMinterPauser {
         
         delete updatedReleaseTimes;
         
-
         if(arrLength != 0){
             for (uint i = 0; i < arrLength; i++){  // Releasing all tokens
                 if(block.timestamp <= releaseTimes[i]){
                     lockedAmount += LockBoxMap[sender][releaseTimes[i]];
                 } else {
+                    totalLockBoxBalance -= LockBoxMap[sender][userReleaseTime[sender][i]];
                     delete LockBoxMap[sender][userReleaseTime[sender][i]];
                     delete userReleaseTime[sender][i];
                 }
@@ -73,37 +70,22 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return true;
     }
 
+    function getLockedBalance(address sender) public view returns (uint){
+        uint totalLockBoxBalance = 0;
+        uint[] memory releaseTimes = userReleaseTime[sender];
+        uint arrLength = releaseTimes.length;
+         if(arrLength != 0){
+            for (uint i = 0; i < arrLength; i++){
+                if(block.timestamp >= releaseTimes[i]){ // There can be a possibility where user has not released it using transfer function
+                    totalLockBoxBalance += LockBoxMap[sender][releaseTimes[i]];
+                }
+            }
+         }
 
-    // function transfer(address recipient, uint256 amount) public override returns (bool) { // only works if sender has sufficient released tokens
-    //     for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
-    //         if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
-    //             if (lockBoxes.length > 0) {
-    //                 lockBoxes[i] = lockBoxes[lockBoxes.length-1];
-    //                 lockBoxes.pop();
-    //             }
-    //         }
-    //     }
-    //     address sender = _msgSender();
-    //     uint availableBalanceOfSender = balanceOf(sender); // optimistic so we have to subtract all locked tokens
-    //     for (uint i = 0; i < lockBoxes.length; i++) { // see if it is possible
-    //         if (sender == lockBoxes[i].beneficiary) {
-    //             availableBalanceOfSender -= lockBoxes[i].lockAmount;
-    //             require(availableBalanceOfSender >= amount, "DimitraToken: transfer amount exceeds balance"); // did not work out
-    //         }
-    //     }
-    //     _transfer(sender, recipient, amount); // did work out
-    //     return true;
-    // }
+         return totalLockBoxBalance;
+    }
 
-    // function getLockBoxCount() public view returns (uint) {
-    //     return LockBoxMap.length;
-    // }
-
-    // function getTotalLockBoxBalance() public view returns (uint) {
-    //     uint totalLockBoxBalance = 0;
-    //     for (uint i = 0; i < lockBoxes.length; i++) {
-    //         totalLockBoxBalance += lockBoxes[i].lockAmount;
-    //     }
-    //     return totalLockBoxBalance;
-    // }
+    function getTotalLockBoxBalance() public view returns (uint) {
+        return totalLockBoxBalance;
+    }
 }
