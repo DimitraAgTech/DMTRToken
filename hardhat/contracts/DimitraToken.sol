@@ -9,11 +9,12 @@ import "hardhat/console.sol";
 contract DimitraToken is ERC20PresetMinterPauser  {
     uint private immutable _cap;
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
+
+    uint _releaseTimeStamp; // uint256 value in seconds since the epoch when next lock is to be released
   
     struct LockBox {
         address beneficiary;
         uint amount;
-        uint releaseTimeStamp; // uint256 value in seconds since the epoch when lock is released
     }
 
     LockBox[] public lockBoxes; // Not a mapping by address because we need to support multiple tranches per address
@@ -34,18 +35,23 @@ contract DimitraToken is ERC20PresetMinterPauser  {
         super._mint(account, amount);
     }
 
-    function issueLockedTokens(address recipient, uint amount, uint releaseTimeStamp) public {
+    function setNextReleaseTimeStamp(uint releaseTimeStamp) public {
+        require(releaseTimeStamp >= block.timestamp + 86400); // release time stamo must be at least 24 hours from now
+        _releaseTimeStamp = releaseTimeStamp;
+    }
+
+    function issueLockedTokens(address recipient, uint amount) public {
         address sender = _msgSender();
         require(hasRole(ISSUER_ROLE, sender), "DimitraToken: must have issuer role to issue locked tokens");
-        LockBox memory lockBox = LockBox(recipient, amount, releaseTimeStamp);
+        LockBox memory lockBox = LockBox(recipient, amount);
         lockBoxes.push(lockBox);
         _transfer(sender, recipient, amount);
-        emit LogIssueLockedTokens(msg.sender, recipient, amount, releaseTimeStamp);
+        emit LogIssueLockedTokens(msg.sender, recipient, amount, _releaseTimeStamp);
     }
 
     function transfer(address recipient, uint256 amount) public override returns (bool) { // only works if sender has sufficient released tokens
         for (uint i = 0; i < lockBoxes.length; i++) { // delete all expired locks
-            if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
+            if (block.timestamp >= _releaseTimeStamp) {
                 lockBoxes[i] = lockBoxes[lockBoxes.length-1];
                 lockBoxes.pop();
             }
@@ -69,7 +75,7 @@ contract DimitraToken is ERC20PresetMinterPauser  {
     function getTotalLockBoxBalance() public view returns (uint) {
         uint totalLockBoxBalance = 0;
         for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
-            if (block.timestamp < lockBoxes[i].releaseTimeStamp) {
+            if (block.timestamp < _releaseTimeStamp) {
                 totalLockBoxBalance += lockBoxes[i].amount;
             }
         }
