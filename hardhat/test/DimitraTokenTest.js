@@ -292,23 +292,5 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     let expectedBalance200 = parseUnits("200",18);
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(expectedBalance200);
 
-    // console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
-    
-    // // console.log("LockBoxMap is ",dimitraToken.LockBoxMap(account1.address)(releaseDate));
-    // console.log("isLocked is ",await dimitraToken.isLocked(account1.address));
-    // // console.log("userReleaseTime is ",await dimitraToken.userReleaseTime(account1.address));
-
-
-    // console.log("\nAfter transferring locked tokens to account1 to account2 before vesting period\n--------------------------------------------");
-    
-    // await dimitraToken.connect(account1).transfer(account2.address,amount);
-    // console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
-    // console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
-    // console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
-
   });
-   
-    // // time travel 10 days into future
-    // await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
-    // await network.provider.send("evm_mine"); // force block to be mined
 });
