@@ -10,7 +10,7 @@ contract DimitraToken is ERC20PresetMinterPauser  {
     uint private immutable _cap;
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
 
-    uint _releaseTimeStamp; // uint256 value in seconds since the epoch when next lock is to be released
+    uint _releaseTimeStamp;
   
     struct LockBox {
         address beneficiary;
