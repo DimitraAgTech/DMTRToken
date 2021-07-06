@@ -17,7 +17,7 @@ contract DimitraToken is ERC20PresetMinterPauser  {
         uint amount;
     }
 
-    LockBox[] public lockBoxes; // Not a mapping by address because we need to support multiple tranches per address
+    LockBox[] public lockBoxes; // Not a mapping by address because we need to support multiple purches per buyer address
 
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTimeStamp);
 
