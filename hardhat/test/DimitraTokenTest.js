@@ -278,13 +278,20 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     await network.provider.send("evm_mine"); // force block to be mined
 
 
-    
+
     console.log("\n\nTime Travel 5 days");
 
     console.log("\nAccount1 attempts to transfer 150 tokens to account2 on Day 6(July 11th)\n--------------------------------------------");
+
+    console.log("\nBefore\n")
+    console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
+    console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
+    console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+    console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
     
-    await expect(dimitraToken.connect(account1).transfer(account2.address,transferAmount150));
+    expect(await dimitraToken.connect(account1).transfer(account2.address,transferAmount150));
     
+    console.log("\nAfter\n")
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
     console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));

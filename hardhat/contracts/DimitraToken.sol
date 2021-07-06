@@ -73,9 +73,9 @@ contract DimitraToken is ERC20PresetMinterPauser {
         }
 
         require(balanceOf(sender) - lockedAmount >= amount, "DimitraToken: Insufficient balance");
-        console.log("Balance of sender is ",balanceOf(sender));
+        // console.log("Balance of sender is ",balanceOf(sender) / 1000000000000000000);
         _transfer(sender, recipient, amount);
-        console.log("Balance of sender is ",balanceOf(sender));
+        // console.log("Balance of sender is ",balanceOf(sender) / 1000000000000000000);
         return true;
     }
 
