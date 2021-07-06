@@ -25,6 +25,11 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
+    function _mint(address account, uint256 amount) internal virtual override {
+        require(ERC20.totalSupply() + amount <= cap(), "DimitraToken: cap exceeded");
+        super._mint(account, amount);
+    }
+
     function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
         require(releaseTimeStamp >= block.timestamp + 86400); // release time stamo must be at least 24 hours from now
