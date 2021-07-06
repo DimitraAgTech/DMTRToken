@@ -2,21 +2,17 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
-//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.2/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"; // remix
-
 import "hardhat/console.sol";
 
 contract DimitraToken is ERC20PresetMinterPauser {
     uint private immutable _cap;
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
   
-    struct LockBox {
-        address beneficiary;
-        uint lockAmount;
-        uint releaseTimeStamp; // uint256 value in seconds since the epoch when lock is released
-    }
-
-    LockBox[] public lockBoxes; // Not a mapping by address because we need to support multiple tranches per address
+    // Change visibility to private
+    mapping (address => mapping(uint => uint)) public LockBoxMap; // Mapping of user => vestingDay => amount
+    mapping (address => uint[]) public userReleaseTime; // user => vestingDays
+    uint[] updatedReleaseTimes;
+    uint totalLockBoxBalance;
 
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTimeStamp);
 
@@ -29,45 +25,67 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
-    function issueLockedTokens(address recipient, uint lockAmount, uint vestingDays) public {
+    function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        uint releaseTimeStamp = block.timestamp + vestingDays * 1 days;
-        LockBox memory lockBox = LockBox(recipient, lockAmount, releaseTimeStamp);
-        lockBoxes.push(lockBox);
-        transfer(recipient, lockAmount);
+        require(releaseTimeStamp >= block.timestamp + 86400); // release time stamo must be at least 24 hours from now
+
+        LockBoxMap[recipient][releaseTimeStamp] += lockAmount;
+        totalLockBoxBalance += lockAmount;
+        userReleaseTime[recipient].push(releaseTimeStamp);
+
         emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTimeStamp);
+        _transfer(_msgSender(), recipient, lockAmount);
     }
 
-    function transfer(address recipient, uint256 amount) public override returns (bool) { // only works if sender has sufficient released tokens
-        for (uint i = 0; i < lockBoxes.length; i++) { // release all expired locks
-            if (block.timestamp >= lockBoxes[i].releaseTimeStamp) {
-                if (lockBoxes.length > 0) {
-                    lockBoxes[i] = lockBoxes[lockBoxes.length-1];
-                    lockBoxes.pop();
+    function transfer(address recipient,uint amount) public override returns (bool) {
+        address sender = _msgSender();
+        uint[] memory releaseTimes = userReleaseTime[sender];
+        uint arrLength = releaseTimes.length;
+        uint lockedAmount;
+        
+        delete updatedReleaseTimes;
+        
+        if(arrLength != 0){
+            for (uint i = 0; i < arrLength; i++){  // Releasing all tokens
+                if(block.timestamp <= releaseTimes[i]){
+                    lockedAmount += LockBoxMap[sender][releaseTimes[i]];
+                } else {
+                    totalLockBoxBalance -= LockBoxMap[sender][userReleaseTime[sender][i]];
+                    delete LockBoxMap[sender][userReleaseTime[sender][i]];
+                    delete userReleaseTime[sender][i];
                 }
             }
-        }
-        address sender = _msgSender();
-        uint availableBalanceOfSender = balanceOf(sender); // optimistic so we have to subtract all locked tokens
-        for (uint i = 0; i < lockBoxes.length; i++) { // see if it is possible
-            if (sender == lockBoxes[i].beneficiary) {
-                availableBalanceOfSender -= lockBoxes[i].lockAmount;
-                require(availableBalanceOfSender >= amount, "DimitraToken: transfer amount exceeds balance"); // did not work out
+
+            for (uint i = 0; i < arrLength; i++){
+                if (userReleaseTime[sender][i] != 0){
+                    updatedReleaseTimes.push(userReleaseTime[sender][i]);
+                }
             }
+
+            userReleaseTime[sender] = updatedReleaseTimes;
         }
-        _transfer(sender, recipient, amount); // did work out
+
+        require(balanceOf(sender) - lockedAmount >= amount, "DimitraToken: Insufficient balance");
+        _transfer(_msgSender(), recipient, amount);
         return true;
     }
 
-    function getLockBoxCount() public view returns (uint) {
-        return lockBoxes.length;
+    function getLockedBalance(address sender) public view returns (uint){
+        uint userLockBoxBalance = 0;
+        uint[] memory releaseTimes = userReleaseTime[sender];
+        uint arrLength = releaseTimes.length;
+         if(arrLength != 0){
+            for (uint i = 0; i < arrLength; i++){
+                if(block.timestamp >= releaseTimes[i]){ // There can be a possibility where user has not released it using transfer function
+                    userLockBoxBalance += LockBoxMap[sender][releaseTimes[i]];
+                }
+            }
+         }
+
+         return totalLockBoxBalance;
     }
 
     function getTotalLockBoxBalance() public view returns (uint) {
-        uint totalLockBoxBalance = 0;
-        for (uint i = 0; i < lockBoxes.length; i++) {
-            totalLockBoxBalance += lockBoxes[i].lockAmount;
-        }
         return totalLockBoxBalance;
     }
 }
