@@ -36,7 +36,7 @@ contract DimitraToken is ERC20PresetMinterPauser  {
     }
 
     function setNextReleaseTimeStamp(uint releaseTimeStamp) public {
-        require(releaseTimeStamp >= block.timestamp + 86400); // release time stamo must be at least 24 hours from now
+        require(releaseTimeStamp >= block.timestamp + 86400); // release time stamp must be at least 24 hours from now
         _releaseTimeStamp = releaseTimeStamp;
     }
 
