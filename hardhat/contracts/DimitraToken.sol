@@ -36,7 +36,7 @@ contract DimitraToken is ERC20PresetMinterPauser  {
     }
 
     function setNextReleaseTimeStamp(uint releaseTimeStamp) public {
-        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
+        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to set next release timestamp");
         require(releaseTimeStamp >= block.timestamp + 86400); // release time stamp must be at least 24 hours from now
         _releaseTimeStamp = releaseTimeStamp;
     }
