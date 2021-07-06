@@ -25,7 +25,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return _cap;
     }
 
-    function _mint(address account, uint256 amount) internal virtual override {
+    function mint(address account, uint256 amount) public virtual override {
         require(ERC20.totalSupply() + amount <= cap(), "DimitraToken: cap exceeded");
         super._mint(account, amount);
     }
