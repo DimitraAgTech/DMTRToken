@@ -19,6 +19,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
         _setupRole(ISSUER_ROLE,_msgSender());
+        _setupRole(MINTER_ROLE,_msgSender());
     }
 
     function cap() public view returns (uint) {
@@ -27,12 +28,13 @@ contract DimitraToken is ERC20PresetMinterPauser {
 
     function mint(address account, uint256 amount) public virtual override {
         require(ERC20.totalSupply() + amount <= cap(), "DimitraToken: cap exceeded");
+        require(hasRole(MINTER_ROLE, _msgSender()), "DimitraToken: must have minter role to mint");
         super._mint(account, amount);
     }
 
     function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        require(releaseTimeStamp >= block.timestamp + 86400); // release time stamo must be at least 24 hours from now
+        require(releaseTimeStamp >= block.timestamp); // release time stamp must be at least 24 hours from now
 
         LockBoxMap[recipient][releaseTimeStamp] += lockAmount;
         totalLockBoxBalance += lockAmount;
@@ -71,7 +73,9 @@ contract DimitraToken is ERC20PresetMinterPauser {
         }
 
         require(balanceOf(sender) - lockedAmount >= amount, "DimitraToken: Insufficient balance");
-        _transfer(_msgSender(), recipient, amount);
+        console.log("Balance of sender is ",balanceOf(sender));
+        _transfer(sender, recipient, amount);
+        console.log("Balance of sender is ",balanceOf(sender));
         return true;
     }
 

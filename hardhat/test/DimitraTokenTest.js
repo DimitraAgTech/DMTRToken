@@ -262,7 +262,6 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(transferAmount50);
 
 
-
     console.log("\nAccount1 attempts to transfer 150 tokens to account2 on Day1\n--------------------------------------------");
     
     await expect(dimitraToken.connect(account1).transfer(account2.address,transferAmount150)).to.be.revertedWith('DimitraToken: Insufficient balance'); // Should throw revert error
@@ -278,6 +277,8 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     await network.provider.send("evm_increaseTime", [5*86400]) // time in seconds = 5 days * 86400 seconds/day
     await network.provider.send("evm_mine"); // force block to be mined
 
+
+    
     console.log("\n\nTime Travel 5 days");
 
     console.log("\nAccount1 attempts to transfer 150 tokens to account2 on Day 6(July 11th)\n--------------------------------------------");
