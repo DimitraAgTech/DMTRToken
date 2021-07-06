@@ -11,6 +11,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
     // Change visibility to private
     mapping (address => mapping(uint => uint)) public LockBoxMap; // Mapping of user => vestingDay => amount
     mapping (address => uint[]) public userReleaseTime; // user => vestingDays
+    uint[] updatedReleaseTimes;
 
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTimeStamp);
 
@@ -42,9 +43,11 @@ contract DimitraToken is ERC20PresetMinterPauser {
     function transfer(address recipient,uint amount) public override returns (bool) {
         address sender = _msgSender();
         uint[] memory releaseTimes = userReleaseTime[sender];
-        uint arrLength = releaseTimes.length();
-        uint memory lockedAmount;
-        uint[] memory updatedReleaseTimes;
+        uint arrLength = releaseTimes.length;
+        uint lockedAmount;
+        
+        delete updatedReleaseTimes;
+        
 
         if(arrLength != 0){
             for (uint i = 0; i < arrLength; i++){  // Releasing all tokens
@@ -67,6 +70,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
 
         require(balanceOf(sender) - lockedAmount >= amount, "DimitraToken: Insufficient balance");
         _transfer(_msgSender(), recipient, amount);
+        return true;
     }
 
 
