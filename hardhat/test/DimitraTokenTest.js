@@ -41,7 +41,7 @@ describe("Token Deployment Tests", function() {
 });
 
 describe("Token Transfer Tests", function () {
-  it("Should transfer tokens between accounts if balance is sufficient", async function() {
+  it("Should transfer tokens between accounts if balance is sufficient and no locks apply", async function() {
     await dimitraToken.connect(owner).mint(account1.address, 50);
     expect(await dimitraToken.balanceOf(account1.address)).to.equal(50);
     await dimitraToken.connect(account1).transfer(account2.address, 50);
@@ -70,36 +70,40 @@ describe("Token Role Tests", function() {
     //console.log("Balance after minting", formatUnits(await dimitraToken.balanceOf(account1.address)));
   })
 
-  it("Contract owner can grant minter role", async function() {
-    //console.log("Balance before minting", formatUnits(await dimitraToken.balanceOf(account1.address)));
-    await dimitraToken.connect(owner).grantRole(id("MINTER_ROLE"), account1.address);
-    await dimitraToken.connect(account1).mint(account1.address, parseUnits("1000", 18));
-    expect(await dimitraToken.balanceOf(account1.address)).to.equal(parseUnits("1000", 18));
-    //console.log("Balance after minting", formatUnits(await dimitraToken.balanceOf(account1.address)));
-  })
-
   it("Non contract owner cannot grant minter role", async function() {
     try {
       await dimitraToken.connect(account1).grantRole(id("MINTER_ROLE"), account2.address);
     } catch (error){
-      assert.include(error.message,"AccessControl","missing role");
+      assert.include(error.message,"AccessControl","is missing role");
     }
     // expect(await dimitraToken.connect(account1).grantRole(id("MINTER_ROLE"), account2.address));
   });
 });
 
 describe("Token Minting Tests", function() {
-  it("Non owner that is not MINTER_ROLE cannot mint tokens", async function() {
+  it("MINTER_ROLE can mint tokens", async function() {
     const mintAmount = '1000000000000000000';
-    try {
-      await dimitraToken.connect(account1).mint(account1.address, mintAmount);
-    } catch (error){
-      assert.include(error.message,"revert","DimitraToken: must have minter role to mint");
-    }
-    // expect( await dimitraToken.connect(account1).mint(account1.address, mintAmount));
+    await expect(dimitraToken.connect(owner).mint(owner.address, mintAmount));
+    await expect(await dimitraToken.totalSupply()).to.equal(mintAmount);
   });
-  
-  it("Minted tokens can be assigned by owner to owner address", async function() {
+
+  it("Non MINTER_ROLE cannot mint tokens", async function() {
+    const mintAmount = '1000000000000000000';
+    await expect(dimitraToken.connect(account1).mint(account1.address, mintAmount)).to.be.revertedWith("DimitraToken: must have minter role to mint");
+  });
+
+  it("Can mint tokens up to cap", async function() {
+    const mintAmount = await dimitraToken.cap();
+    await dimitraToken.connect(owner).mint(owner.address, mintAmount);
+    await expect(await dimitraToken.totalSupply()).to.equal(mintAmount);
+  });
+
+  it("Cannot mint tokens more than cap", async function() {
+    const mintAmount = await dimitraToken.cap() + 1;
+    await expect(dimitraToken.connect(owner).mint(owner.address, mintAmount)).to.be.revertedWith("DimitraToken: cap exceeded");
+    });
+    
+  it("Minted tokens can be assigned to self", async function() {
     const mintAmount = '1000000000000000000';
     const balanceBeforeMinting = await dimitraToken.balanceOf(owner.address);
     //console.log("balanceBeforeMinting", formatUnits(balanceBeforeMinting));
@@ -109,7 +113,7 @@ describe("Token Minting Tests", function() {
     expect(balanceAfterMinting).to.equal(balanceBeforeMinting + mintAmount);
   });
 
-  it("Minted tokens can be assigned by owner to another address", async function() {
+  it("Minted tokens can be assigned to another address", async function() {
     const mintAmount = '1000000000000000000';
     const balanceBeforeMinting = await dimitraToken.balanceOf(account1.address);
     //console.log("balanceBeforeMinting", formatUnits(balanceBeforeMinting));
@@ -129,7 +133,6 @@ describe("Token Minting Tests", function() {
 });
 
 describe("Token Burning Tests", function() {
-  
   it("Contract owner can burn own tokens", async function() {
     const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
@@ -354,7 +357,6 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
 
-
     console.log("\nAfter transferring 200 locked tokens till 10th July(4 days) to account1\n--------------------------------------------");
     // issue locked tokens
     expect(await dimitraToken.connect(owner).issueLockedTokens(account1.address, lockedTokenAmount200, releaseDate107)); // 10th July
@@ -365,8 +367,6 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
 
     let expectedBalance350 = parseUnits("350",18);
     expect(await dimitraToken.balanceOf(account1.address)).to.equal(expectedBalance350);
-
-
 
     console.log("\nAfter transferring 250 locked tokens till 15th July(9 days) to account1\n--------------------------------------------");
     // issue locked tokens
@@ -379,8 +379,6 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     let expectedBalance600 = parseUnits("600",18);
     expect(await dimitraToken.balanceOf(account1.address)).to.equal(expectedBalance600);
     
-
-
     console.log("\nAccount1 tries to transfer 50 tokens to account2 on Day1\n--------------------------------------------");
     await dimitraToken.connect(account1).transfer(account2.address,transferAmount50);
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
@@ -389,7 +387,6 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(transferAmount50);
-
 
     console.log("\nAccount1 attempts to transfer 150 tokens to account2 on Day1\n--------------------------------------------");
     try{
@@ -425,7 +422,6 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
     console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
-
     console.log("\nAccount1 attempts to transfer 300 tokens to account2 on Day 6(July 11th)\n--------------------------------------------");
     let transferAmount300 = parseUnits("300", 18);
 
@@ -442,12 +438,10 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     // let expectedBalance350 = parseUnits("350",18);
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(expectedBalance350);
 
-
     console.log("\n\nTime Travel 5 days");
     // time travel 5 days into future
     await network.provider.send("evm_increaseTime", [5*86400]) // time in seconds = 5 days * 86400 seconds/day
     await network.provider.send("evm_mine"); // force block to be mined
-
 
     console.log("\nAccount1 attempts to transfer 250 tokens to account2 on Day 11(July 16th)\n--------------------------------------------");
     let transferAmount250 = parseUnits("250", 18);
