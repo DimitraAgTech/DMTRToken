@@ -10,8 +10,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
     // Change visibility to private
     mapping (address => mapping(uint => uint)) private LockBoxMap; // Mapping of user => vestingDay => amount
     mapping (address => uint[]) private userReleaseTime; // user => vestingDays
-    uint[] updatedReleaseTimes;
-    uint totalLockBoxBalance;
+    uint[] private updatedReleaseTimes;
+    uint private totalLockBoxBalance;
 
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTimeStamp);
 
@@ -89,7 +89,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
          return userLockBoxBalance;
     }
 
-    function getTotalLockBoxBalance() public view returns (uint) {
+    function getTotalLockedBoxBalance() public view returns (uint) {
         return totalLockBoxBalance;
     }
 }
