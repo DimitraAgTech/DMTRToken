@@ -90,7 +90,7 @@ describe("Token Minting Tests", function() {
   });
 
   it("Cannot mint tokens more than cap", async function() {
-    const mintAmount = await dimitraToken.cap()+1;
+    const mintAmount = await dimitraToken.cap() + 1;
     await expect(dimitraToken.connect(owner).mint(owner.address, mintAmount)).to.be.revertedWith("DimitraToken: cap exceeded");
     });
 
@@ -224,6 +224,8 @@ describe("Token Pausing Tests", function() {
 });
 
 describe("Token Issuance, Locking, and Releasing Tests", function() {
+
+  
   it("Token issuance, locking, and releasing", async function() {
     
     // owner mints initial balance for issuing locked tokens
@@ -232,43 +234,42 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     expect(await dimitraToken.balanceOf(owner.address)).to.equal(amount);
 
     console.log("\nAfter mint but before issue locked tokens\n--------------------------------------------");
-    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
-    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockCount()).toString());
+    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getLockedBalance()).toString());
     console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
 
     // issue locked tokens
-    now = Math.floor(Date.now() / 1000); // unix timestamp (seconds JAN 01 1970 UTC)
-    releaseDate = now + (7*86400); // 7 days from now
-    await dimitraToken.setNextReleaseTimeStamp(releaseDate);
-    await expect(dimitraToken.connect(owner).issueLockedTokens(account1.address, amount)).to.emit(dimitraToken, 'LogIssueLockedTokens'); // release 7 days from now
+    now = Math.floor(Date.now()); // unix timestamp (seconds JAN 01 1970 UTC)
+    releaseTime = now + (7*86400); // 7 days from now
+    expect(await dimitraToken.connect(owner).issueLockedTokens(account1.address, amount, releaseTime)).to.emit(dimitraToken, 'LogIssueLockedTokens');
     expect(await dimitraToken.balanceOf(account1.address)).to.equal(amount);
 
     console.log("\nAfter issue locked tokens but before attempt transfer locked tokens\n--------------------------------------------");
-    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
-    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
-    console.log("Balance of owner", (await dimitraToken.balanceOf(owner.address)));
-    console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
-    console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
-    
-    // try to transfer tokens that are not yet released
-    await expect(dimitraToken.connect(account1).transfer(account2.address, 50)).to.be.revertedWith("DimitraToken: transfer amount exceeds balance");
-
-    console.log("\nAfter 1st attempt transfer tokens but before time travel\n--------------------------------------------");
-    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
-    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockCount()).toString());
+    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getLockedBalance()).toString());
     console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
     
-    // time travel 10 days into future
-    await network.provider.send("evm_increaseTime", [10*86400]) // time in seconds = 10 days * 86400 seconds/day
+    // try to transfer tokens that are not yet released
+    expect(await dimitraToken.connect(account1).transfer(account2.address, 50)).to.be.revertedWith("DimitraToken: transfer amount exceeds balance");
+
+    console.log("\nAfter 1st attempt transfer tokens but before time travel\n--------------------------------------------");
+    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockCount()).toString());
+    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getLockedBalance()).toString());
+    console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
+    console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
+    console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
+    
+    // time travel 100 days into future
+    await network.provider.send("evm_increaseTime", [100*86400]) // time in seconds = 100 days * 86400 seconds/day
     await network.provider.send("evm_mine"); // force block to be mined
 
     console.log("\nAfter time travel but before attempt transfer\n--------------------------------------------");
-    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
-    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockCount()).toString());
+    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getLockedBalance()).toString());
     console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
@@ -278,10 +279,11 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(50);
 
     console.log("\nAfter 2nd attempt transfer\n--------------------------------------------");
-    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockBoxCount()).toString());
-    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getTotalLockBoxBalance()).toString());
+    console.log("Lock Box Count: ",         await (await dimitraToken.connect(owner).getLockCount()).toString());
+    console.log("Total Lock Box Balance: ", await (await dimitraToken.connect(owner).getLockedBalance()).toString());
     console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
     console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
   });
+
 });
