@@ -2,15 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
-import "hardhat/console.sol";
 
 contract DimitraToken is ERC20PresetMinterPauser {
     uint private immutable _cap;
-    bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
+    bytes32 private constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
   
     // Change visibility to private
-    mapping (address => mapping(uint => uint)) public LockBoxMap; // Mapping of user => vestingDay => amount
-    mapping (address => uint[]) public userReleaseTime; // user => vestingDays
+    mapping (address => mapping(uint => uint)) private LockBoxMap; // Mapping of user => vestingDay => amount
+    mapping (address => uint[]) private userReleaseTime; // user => vestingDays
     uint[] updatedReleaseTimes;
     uint totalLockBoxBalance;
 
@@ -74,9 +73,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         }
 
         require(balanceOf(sender) - lockedAmount >= amount, "DimitraToken: Insufficient balance");
-        // console.log("Balance of sender is ",balanceOf(sender) / 1000000000000000000);
         _transfer(sender, recipient, amount);
-        // console.log("Balance of sender is ",balanceOf(sender) / 1000000000000000000);
         return true;
     }
 
