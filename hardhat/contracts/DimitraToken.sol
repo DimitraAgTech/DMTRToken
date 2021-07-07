@@ -19,7 +19,6 @@ contract DimitraToken is ERC20PresetMinterPauser {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
         _setupRole(ISSUER_ROLE,_msgSender());
-        _setupRole(MINTER_ROLE,_msgSender());
     }
 
     function cap() public view returns (uint) {
@@ -68,7 +67,6 @@ contract DimitraToken is ERC20PresetMinterPauser {
                     updatedReleaseTimes.push(userReleaseTime[sender][i]);
                 }
             }
-
             userReleaseTime[sender] = updatedReleaseTimes;
         }
 
