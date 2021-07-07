@@ -92,9 +92,9 @@ describe("Token Minting Tests", function() {
     try {
       await dimitraToken.connect(account1).mint(account1.address, mintAmount);
     } catch(error){
-      assert.include(error.message,"revert","DimitraToken: must have minter role to mint");
+      assert.include(error.message,"revert","ERC20PresetMinterPauser: must have minter role to mint");
     }
-    // await expect(dimitraToken.connect(account1).mint(account1.address, mintAmount)).to.be.revertedWith("DimitraToken: must have minter role to mint");
+    // await expect(dimitraToken.connect(account1).mint(account1.address, mintAmount)).to.be.revertedWith("ERC20PresetMinterPauser: must have minter role to mint");
   });
 
   it("Can mint tokens up to cap", async function() {

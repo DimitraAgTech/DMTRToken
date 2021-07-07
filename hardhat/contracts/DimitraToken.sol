@@ -18,7 +18,6 @@ contract DimitraToken is ERC20PresetMinterPauser {
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
-        _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(ISSUER_ROLE,_msgSender());
     }
 
@@ -27,9 +26,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
     }
 
     function mint(address account, uint256 amount) public virtual override {
-        require(hasRole(MINTER_ROLE, _msgSender()), "DimitraToken: must have minter role to mint");
         require(ERC20.totalSupply() + amount <= cap(), "DimitraToken: cap exceeded");
-        _mint(account, amount);
+        ERC20PresetMinterPauser.mint(account, amount);
     }
 
     function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
