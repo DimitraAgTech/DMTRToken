@@ -426,7 +426,7 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
 
-    console.log("\nAccount1 attempts to transfer 350 tokens to account2 on Day 6(July 11th)\n--------------------------------------------");
+    console.log("\nAccount1 attempts to transfer 300 tokens to account2 on Day 6(July 11th)\n--------------------------------------------");
     let transferAmount300 = parseUnits("300", 18);
 
     try{
@@ -443,6 +443,7 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     expect(await dimitraToken.balanceOf(account2.address)).to.equal(expectedBalance350);
 
 
+    console.log("\n\nTime Travel 5 days");
     // time travel 5 days into future
     await network.provider.send("evm_increaseTime", [5*86400]) // time in seconds = 5 days * 86400 seconds/day
     await network.provider.send("evm_mine"); // force block to be mined
