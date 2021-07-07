@@ -27,8 +27,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
 
     function mint(address account, uint256 amount) public virtual override {
         require(ERC20.totalSupply() + amount <= cap(), "DimitraToken: cap exceeded");
-        require(hasRole(MINTER_ROLE, _msgSender()), "DimitraToken: must have minter role to mint");
-        super._mint(account, amount);
+        _mint(account, amount);
     }
 
     function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
