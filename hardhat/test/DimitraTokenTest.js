@@ -392,7 +392,44 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
     console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
     console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
-    // let expectedBalance200 = parseUnits("200",18);
-    // expect(await dimitraToken.balanceOf(account2.address)).to.equal(expectedBalance200);
+
+
+    console.log("\nAccount1 attempts to transfer 350 tokens to account2 on Day 6(July 11th)\n--------------------------------------------");
+    let transferAmount300 = parseUnits("300", 18);
+
+    try{
+      await dimitraToken.connect(account1).transfer(account2.address,transferAmount300); // Should throw revert error
+    } catch (error){
+      assert.include(error.message,"revert","DimitraToken: Insufficient balance");
+    }
+
+    console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
+    console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
+    console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+    console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
+    // let expectedBalance350 = parseUnits("350",18);
+    expect(await dimitraToken.balanceOf(account2.address)).to.equal(expectedBalance350);
+
+
+    // time travel 5 days into future
+    await network.provider.send("evm_increaseTime", [5*86400]) // time in seconds = 5 days * 86400 seconds/day
+    await network.provider.send("evm_mine"); // force block to be mined
+
+
+    console.log("\nAccount1 attempts to transfer 250 tokens to account2 on Day 11(July 16th)\n--------------------------------------------");
+    let transferAmount250 = parseUnits("250", 18);
+
+    try{
+      await dimitraToken.connect(account1).transfer(account2.address,transferAmount250); // Should throw revert error
+    } catch (error){
+      assert.include(error.message,"revert","DimitraToken: Insufficient balance");
+    }
+
+    console.log("Balance of account1", formatUnits(await dimitraToken.balanceOf(account1.address)));
+    console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
+    console.log("Locked Balance of account1 ",formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+    console.log("Total Locked Balance",formatUnits(await dimitraToken.getTotalLockBoxBalance()));
+    expect(await dimitraToken.balanceOf(account2.address)).to.equal(expectedBalance600);
+
   });
 });
