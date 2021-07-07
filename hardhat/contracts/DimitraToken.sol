@@ -89,7 +89,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
          return userLockBoxBalance;
     }
 
-    function getTotalLockedBoxBalance() public view returns (uint) {
+    function getTotalLockBoxBalance() public view returns (uint) {
         return totalLockBoxBalance;
     }
 }
