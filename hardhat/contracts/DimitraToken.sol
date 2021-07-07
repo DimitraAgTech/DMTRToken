@@ -35,7 +35,6 @@ contract DimitraToken is ERC20PresetMinterPauser {
 
     function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        console.log("block.timstamp ",block.timestamp);
         require(releaseTimeStamp >= block.timestamp, "DimitraToken: Release time should be greater than current block time"); // release time stamp must be at least 24 hours from now
 
         LockBoxMap[recipient][releaseTimeStamp] += lockAmount;
@@ -87,13 +86,13 @@ contract DimitraToken is ERC20PresetMinterPauser {
         uint arrLength = releaseTimes.length;
          if(arrLength != 0){
             for (uint i = 0; i < arrLength; i++){
-                if(block.timestamp >= releaseTimes[i]){ // There can be a possibility where user has not released it using transfer function
+                if(block.timestamp <= releaseTimes[i]){ // There can be a possibility where user has not released it using transfer function
                     userLockBoxBalance += LockBoxMap[sender][releaseTimes[i]];
                 }
             }
          }
 
-         return totalLockBoxBalance;
+         return userLockBoxBalance;
     }
 
     function getTotalLockBoxBalance() public view returns (uint) {
