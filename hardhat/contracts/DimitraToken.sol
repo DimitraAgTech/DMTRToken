@@ -17,6 +17,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTimeStamp);
 
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
         _setupRole(ISSUER_ROLE,_msgSender());
         _setupRole(MINTER_ROLE,_msgSender());
@@ -34,7 +35,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
 
     function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        require(releaseTimeStamp >= block.timestamp); // release time stamp must be at least 24 hours from now
+        console.log("block.timstamp ",block.timestamp);
+        require(releaseTimeStamp >= block.timestamp, "DimitraToken: Release time should be greater than current block time"); // release time stamp must be at least 24 hours from now
 
         LockBoxMap[recipient][releaseTimeStamp] += lockAmount;
         totalLockBoxBalance += lockAmount;
