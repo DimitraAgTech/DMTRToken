@@ -16,8 +16,9 @@ contract DimitraToken is ERC20PresetMinterPauser {
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTimeStamp);
 
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
+
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(ISSUER_ROLE,_msgSender());
     }
 
@@ -32,14 +33,15 @@ contract DimitraToken is ERC20PresetMinterPauser {
 
     function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
         require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        require(releaseTimeStamp >= block.timestamp, "DimitraToken: Release time should be greater than current block time"); // release time stamp must be at least 24 hours from now
+        require(releaseTimeStamp >= block.timestamp, "DimitraToken: Release time should be greater than current block time");
 
         LockBoxMap[recipient][releaseTimeStamp] += lockAmount;
         totalLockBoxBalance += lockAmount;
         userReleaseTime[recipient].push(releaseTimeStamp);
 
-        emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTimeStamp);
         _transfer(_msgSender(), recipient, lockAmount);
+
+        emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTimeStamp);
     }
 
     function transfer(address recipient,uint amount) public override returns (bool) {
@@ -78,6 +80,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         uint userLockBoxBalance = 0;
         uint[] memory releaseTimes = userReleaseTime[sender];
         uint arrLength = releaseTimes.length;
+
          if(arrLength != 0){
             for (uint i = 0; i < arrLength; i++){
                 if(block.timestamp <= releaseTimes[i]){ // There can be a possibility where user has not released it using transfer function
@@ -85,6 +88,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
                 }
             }
          }
+         
          return userLockBoxBalance;
     }
 
