@@ -8,12 +8,12 @@ contract DimitraToken is ERC20PresetMinterPauser {
     bytes32 private constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
   
     // Change visibility to private
-    mapping (address => mapping(uint => uint)) private LockBoxMap; // Mapping of user => vestingDay => amount
-    mapping (address => uint[]) private userReleaseTime; // user => vestingDays
+    mapping (address => mapping(uint => uint)) private lockBoxMap; // Mapping of user => vestingDay => amount
+    mapping (address => uint[]) private userReleaseTimes; // user => vestingDays
     uint[] private updatedReleaseTimes;
     uint private totalLockBoxBalance;
 
-    event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTimeStamp);
+    event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTime);
 
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
@@ -31,45 +31,45 @@ contract DimitraToken is ERC20PresetMinterPauser {
         ERC20PresetMinterPauser.mint(account, amount);
     }
 
-    function issueLockedTokens(address recipient, uint lockAmount, uint releaseTimeStamp) public { // Send the mature date by calculating if from the FrontEnd
-        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to issue locked tokens");
-        require(releaseTimeStamp >= block.timestamp, "DimitraToken: Release time should be greater than current block time");
+    function issueLockedTokens(address recipient, uint lockAmount, uint releaseTime) public { // Vesting releaseTime is calculating in FrontEnd
+        address sender = _msgSender();
 
-        LockBoxMap[recipient][releaseTimeStamp] += lockAmount;
+        require(hasRole(ISSUER_ROLE, sender), "DimitraToken: must have issuer role to issue locked tokens");
+        require(releaseTime >= block.timestamp, "DimitraToken: Release time must be greater than current block time");
+
+        lockBoxMap[recipient][releaseTime] += lockAmount;
         totalLockBoxBalance += lockAmount;
-        userReleaseTime[recipient].push(releaseTimeStamp);
+        userReleaseTimes[recipient].push(releaseTime);
 
-        _transfer(_msgSender(), recipient, lockAmount);
+        _transfer(sender, recipient, lockAmount);
 
-        emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTimeStamp);
+        emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTime);
     }
 
-    function transfer(address recipient,uint amount) public override returns (bool) {
+    function transfer(address recipient, uint amount) public override returns (bool) {
         address sender = _msgSender();
-        uint[] memory releaseTimes = userReleaseTime[sender];
+
+        uint[] memory releaseTimes = userReleaseTimes[sender];
         uint arrLength = releaseTimes.length;
         uint lockedAmount;
         
         delete updatedReleaseTimes;
         
-        if(arrLength != 0){
-            for (uint i = 0; i < arrLength; i++){  // Releasing all tokens
-                if(block.timestamp <= releaseTimes[i]){
-                    lockedAmount += LockBoxMap[sender][releaseTimes[i]];
-                } else {
-                    totalLockBoxBalance -= LockBoxMap[sender][userReleaseTime[sender][i]];
-                    delete LockBoxMap[sender][userReleaseTime[sender][i]];
-                    delete userReleaseTime[sender][i];
-                }
+        for (uint i = 0; i < arrLength; i++){  // Releasing all tokens
+            if(block.timestamp <= releaseTimes[i]){
+                lockedAmount += lockBoxMap[sender][releaseTimes[i]];
+            } else {
+                totalLockBoxBalance -= lockBoxMap[sender][userReleaseTimes[sender][i]];
+                delete lockBoxMap[sender][userReleaseTimes[sender][i]];
+                delete userReleaseTimes[sender][i];
             }
-
-            for (uint i = 0; i < arrLength; i++){
-                if (userReleaseTime[sender][i] != 0){
-                    updatedReleaseTimes.push(userReleaseTime[sender][i]);
-                }
-            }
-            userReleaseTime[sender] = updatedReleaseTimes;
         }
+        for (uint i = 0; i < arrLength; i++){
+            if (userReleaseTimes[sender][i] != 0){
+                updatedReleaseTimes.push(userReleaseTimes[sender][i]);
+            }
+        }
+        userReleaseTimes[sender] = updatedReleaseTimes;
 
         require(balanceOf(sender) - lockedAmount >= amount, "DimitraToken: Insufficient balance");
         _transfer(sender, recipient, amount);
@@ -78,13 +78,13 @@ contract DimitraToken is ERC20PresetMinterPauser {
 
     function getLockedBalance(address sender) public view returns (uint){
         uint userLockBoxBalance = 0;
-        uint[] memory releaseTimes = userReleaseTime[sender];
+        uint[] memory releaseTimes = userReleaseTimes[sender];
         uint arrLength = releaseTimes.length;
 
          if(arrLength != 0){
             for (uint i = 0; i < arrLength; i++){
                 if(block.timestamp <= releaseTimes[i]){ // There can be a possibility where user has not released it using transfer function
-                    userLockBoxBalance += LockBoxMap[sender][releaseTimes[i]];
+                    userLockBoxBalance += lockBoxMap[sender][releaseTimes[i]];
                 }
             }
          }
