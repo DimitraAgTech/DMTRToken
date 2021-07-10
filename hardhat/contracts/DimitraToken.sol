@@ -7,8 +7,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
     uint private immutable _cap;
     bytes32 private constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
   
-    mapping (address => mapping(uint => uint)) private lockBoxMap; // Mapping of user => vestingDay => amount
-    mapping (address => uint[]) private userReleaseTimes; // user => vestingDays
+    mapping (address => mapping(uint => uint)) private lockBoxMap; // Mapping of user => releaseTime => amount
+    mapping (address => uint[]) private userReleaseTimes; // user => releaseTime
     uint [] private updatedReleaseTimes;
     uint private totalLockBoxBalance;
 
@@ -28,7 +28,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         ERC20PresetMinterPauser.mint(account, amount);
     }
 
-    function issueLockedTokens(address recipient, uint lockAmount, uint releaseTime) public { // Vesting releaseTime is calculating in FrontEnd
+    function issueLockedTokens(address recipient, uint lockAmount, uint releaseTime) public { // The releaseTime is a date calculated in front end (should be at 12:00:00 AM)
         address sender = _msgSender();
 
         require(hasRole(ISSUER_ROLE, sender), "DimitraToken: Must have issuer role to issue locked tokens");
@@ -52,8 +52,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
         
         delete updatedReleaseTimes;
         
-        for (uint i = 0; i < arrLength; i++){  // Release all matured tokens
-            if(block.timestamp <= releaseTimes[i]){
+        for (uint i = 0; i < arrLength; i++) {  // Release all matured tokens
+            if(block.timestamp <= releaseTimes[i]) {
                 lockedAmount += lockBoxMap[sender][releaseTimes[i]];
             } else {
                 totalLockBoxBalance -= lockBoxMap[sender][userReleaseTimes[sender][i]];
@@ -61,8 +61,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
                 delete userReleaseTimes[sender][i];
             }
         }
-        for (uint i = 0; i < arrLength; i++){
-            if (userReleaseTimes[sender][i] != 0){
+        for (uint i = 0; i < arrLength; i++) {
+            if (userReleaseTimes[sender][i] != 0) {
                 updatedReleaseTimes.push(userReleaseTimes[sender][i]);
             }
         }
@@ -86,7 +86,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         uint arrLength = releaseTimes.length;
 
         for (uint i = 0; i < arrLength; i++) {
-            if (block.timestamp <= releaseTimes[i]){ // NOTE: possibility that user has not yet released all matured locks using transfer function
+            if (block.timestamp <= releaseTimes[i]) {
                 userLockBoxBalance += lockBoxMap[addr][releaseTimes[i]];
             }
         }
