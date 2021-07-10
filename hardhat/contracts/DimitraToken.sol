@@ -7,18 +7,15 @@ contract DimitraToken is ERC20PresetMinterPauser {
     uint private immutable _cap;
     bytes32 private constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
   
-    // Change visibility to private
     mapping (address => mapping(uint => uint)) private lockBoxMap; // Mapping of user => vestingDay => amount
     mapping (address => uint[]) private userReleaseTimes; // user => vestingDays
-    uint[] private updatedReleaseTimes;
+    uint [] private updatedReleaseTimes;
     uint private totalLockBoxBalance;
 
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTime);
 
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
         _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
-
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(ISSUER_ROLE,_msgSender());
     }
 
@@ -27,14 +24,14 @@ contract DimitraToken is ERC20PresetMinterPauser {
     }
 
     function mint(address account, uint256 amount) public virtual override {
-        require(ERC20.totalSupply() + amount <= cap(), "DimitraToken: cap exceeded");
+        require(ERC20.totalSupply() + amount <= cap(), "DimitraToken: Cap exceeded");
         ERC20PresetMinterPauser.mint(account, amount);
     }
 
     function issueLockedTokens(address recipient, uint lockAmount, uint releaseTime) public { // Vesting releaseTime is calculating in FrontEnd
         address sender = _msgSender();
 
-        require(hasRole(ISSUER_ROLE, sender), "DimitraToken: must have issuer role to issue locked tokens");
+        require(hasRole(ISSUER_ROLE, sender), "DimitraToken: Must have issuer role to issue locked tokens");
         require(releaseTime >= block.timestamp, "DimitraToken: Release time must be greater than current block time");
 
         lockBoxMap[recipient][releaseTime] += lockAmount;
@@ -55,7 +52,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         
         delete updatedReleaseTimes;
         
-        for (uint i = 0; i < arrLength; i++){  // Releasing all tokens
+        for (uint i = 0; i < arrLength; i++){  // Release all matured tokens
             if(block.timestamp <= releaseTimes[i]){
                 lockedAmount += lockBoxMap[sender][releaseTimes[i]];
             } else {
@@ -76,23 +73,24 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return true;
     }
 
-    function getLockedBalance(address sender) public view returns (uint){
+    function getLockedBalance(address addr) public view returns (uint) {
+        address sender = _msgSender();
+        require(addr == sender || hasRole(ISSUER_ROLE, sender), "DimitraToken: Only issuer role or sender who owns address can get locked balance");
         uint userLockBoxBalance = 0;
-        uint[] memory releaseTimes = userReleaseTimes[sender];
+        uint[] memory releaseTimes = userReleaseTimes[addr];
         uint arrLength = releaseTimes.length;
 
-         if(arrLength != 0){
-            for (uint i = 0; i < arrLength; i++){
-                if(block.timestamp <= releaseTimes[i]){ // There can be a possibility where user has not released it using transfer function
-                    userLockBoxBalance += lockBoxMap[sender][releaseTimes[i]];
-                }
+        for (uint i = 0; i < arrLength; i++) {
+            if (block.timestamp <= releaseTimes[i]){ // NOTE: possibility that user has not yet released all matured locks using transfer function
+                userLockBoxBalance += lockBoxMap[addr][releaseTimes[i]];
             }
-         }
+        }
          
-         return userLockBoxBalance;
+        return userLockBoxBalance;
     }
 
     function getTotalLockBoxBalance() public view returns (uint) {
+        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to get total lockbox balance");
         return totalLockBoxBalance;
     }
 }

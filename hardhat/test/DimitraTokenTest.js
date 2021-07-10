@@ -318,6 +318,33 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     // expect(await dimitraToken.balanceOf(account2.address)).to.equal(expectedBalance200);
   //});
 
+  it("Default admin role can get locked balance", async function() {
+
+  });
+
+  it("Sender who owns address can get locked balance", async function() {
+
+  });
+
+  it("Non-default admin role who does not own address cannot get locked balance", async function() {
+
+  });
+
+  it("Default admin role can get total lockbox balance", async function() {
+    expect((await dimitraToken.connect(owner).getTotalLockBoxBalance())).to.equal(0);
+    await dimitraToken.connect(owner).grantRole(id("ISSUER_ROLE"), account1.address);
+    console.log("################## ", await dimitraToken.hasRole(id("ISSUER_ROLE"), account1.address));
+    // expect(await dimitraToken.connect(account1).getTotalLockBoxBalance()).to.equal(0); // ????????????????????????????????????
+  });
+
+  it("Non-default admin role cannot get total lockbox balance", async function() {
+    try{
+      await dimitraToken.connect(account1).getTotalLockBoxBalance(); // Should throw revert error
+    } catch (error){
+      assert.include(error.message,"revert","DimitraToken: must have default admin role to get total lockbox balance");
+    }
+  });
+
   it("Token issuance multiple locks", async function() {
     
     // owner mints initial balance for issuing locked tokens
