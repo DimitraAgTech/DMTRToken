@@ -73,6 +73,11 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return true;
     }
 
+    function getTotalLockBoxBalance() public view returns (uint) {
+        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to get total lockbox balance");
+        return totalLockBoxBalance;
+    }
+
     function getLockedBalance(address addr) public view returns (uint) {
         address sender = _msgSender();
         require(addr == sender || hasRole(ISSUER_ROLE, sender), "DimitraToken: Only issuer role or sender who owns address can get locked balance");
@@ -89,8 +94,9 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return userLockBoxBalance;
     }
 
-    function getTotalLockBoxBalance() public view returns (uint) {
-        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to get total lockbox balance");
-        return totalLockBoxBalance;
+    function getReleasedBalance(address addr) public view returns (uint) {
+        address sender = _msgSender();
+        require(addr == sender || hasRole(ISSUER_ROLE, sender), "DimitraToken: Only issuer role or sender who owns address can get released balance");
+        return balanceOf(addr) - getLockedBalance(addr);
     }
 }
