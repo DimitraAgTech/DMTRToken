@@ -2,12 +2,6 @@ const { expect, assert } = require("chai");
 const { parseEther, formatEther, formatUnits, parseUnits, formatBytes32String, keccak256, id } = require("ethers/lib/utils");
 const { ethers } = require("hardhat");
 
-const getCurrentBlockTimeStamp = async () => {
-  const currentBlockNumber = await ethers.provider.getBlockNumber();
-  const currentBlock = await ethers.provider.getBlock(currentBlockNumber);
-  return currentBlock.timestamp;
-}
-
 let token;
 let dimitraToken;
 let owner;
@@ -165,52 +159,52 @@ describe("Token Burning Tests", function() {
   it("Contract owner cannot burn tokens of others without allowance approval", async function() {
     const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(account1.address, mintAmount);
-    let balance = await dimitraToken.balanceOf(account1.address);
+    let amount = await dimitraToken.balanceOf(account1.address);
     try {
-      await dimitraToken.connect(owner).burnFrom(account1.address, balance);
+      await dimitraToken.connect(owner).burnFrom(account1.address, amount);
     } catch(error){
       assert.include(error.message,"revert","ERC20: burn amount exceeds allowance");
     }
-    // await expect(dimitraToken.connect(owner).burnFrom(account1.address, balance)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
+    // await expect(dimitraToken.connect(owner).burnFrom(account1.address, amount)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
   });
 
   it("Non contract owner cannot burn tokens of owner without allowance approval", async function() {
     const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
-    let balance = await dimitraToken.balanceOf(owner.address);
+    let amount = await dimitraToken.balanceOf(owner.address);
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account1.address);
 
     try {
-      await dimitraToken.connect(account1).burnFrom(owner.address, balance);
+      await dimitraToken.connect(account1).burnFrom(owner.address, amount);
     } catch(error){
       assert.include(error.message,"revert","ERC20: burn amount exceeds allowance");
     }
-    // await expect(dimitraToken.connect(account1).burnFrom(owner.address, balance)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
+    // await expect(dimitraToken.connect(account1).burnFrom(owner.address, amount)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
   });
 
   it("An account cannot burn tokens of another without allowance approval", async function() {
     const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(account1.address, mintAmount);
-    let balance = await dimitraToken.balanceOf(account1.address);
+    let amount = await dimitraToken.balanceOf(account1.address);
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account2.address);
 
     try {
-      await dimitraToken.connect(account2).burnFrom(account1.address, balance);
+      await dimitraToken.connect(account2).burnFrom(account1.address, amount);
     } catch(error){
       assert.include(error.message,"revert","ERC20: burn amount exceeds allowance");
     }
-    // await expect(dimitraToken.connect(account2).burnFrom(account1.address, balance)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
+    // await expect(dimitraToken.connect(account2).burnFrom(account1.address, amount)).to.be.revertedWith("ERC20: burn amount exceeds allowance");
   });
 
   it("An account can burn tokens of another if approved", async function() {
     const mintAmount = '1000000000000000000';
     await dimitraToken.connect(owner).mint(account1.address, mintAmount);
-    let balance = await dimitraToken.balanceOf(account1.address);
+    let amount = await dimitraToken.balanceOf(account1.address);
     await dimitraToken.connect(owner).grantRole(id("BURNER_ROLE"), account2.address);
-    await dimitraToken.connect(account1).approve(account2.address, balance);
-    await dimitraToken.connect(account2).burnFrom(account1.address, balance);
+    await dimitraToken.connect(account1).approve(account2.address, amount);
+    await dimitraToken.connect(account2).burnFrom(account1.address, amount);
     expect(await dimitraToken.balanceOf(account1.address)).to.equal(0);
-    //console.log("balance", formatUnits(await dimitraToken.balanceOf(account1.address)));
+    //console.log("amount", formatUnits(await dimitraToken.balanceOf(account1.address)));
     //console.log("allowance", formatUnits(await dimitraToken.allowance(account1.address, account2.address)));
   });
 });
@@ -218,9 +212,9 @@ describe("Token Burning Tests", function() {
 describe("Token Pausing Tests", function() {
   it("Contract owner can pause contract", async function() {
     // set balance up for transfer
-    let amount = parseUnits("10", 18);
-    await dimitraToken.connect(owner).mint(account1.address, amount);
-    amount = await dimitraToken.balanceOf(account1.address);
+    const mintAmount = parseUnits("10", 18);
+    await dimitraToken.connect(owner).mint(account1.address, mintAmount);
+    let amount = await dimitraToken.balanceOf(account1.address);
 
     // transfer should succeed while not paused
     await dimitraToken.connect(account1).transfer(account2.address, amount);
@@ -302,18 +296,26 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     }
   });
 
-  it("Token issuance multiple locks", async function() {
+  const getCurrentBlockTimeStamp = async () => {
+    const currentBlockNumber = await ethers.provider.getBlockNumber();
+    const currentBlock = await ethers.provider.getBlock(currentBlockNumber);
+    return currentBlock.timestamp;
+  }
 
-    // The Unix epoch (or Unix time or POSIX time or Unix timestamp) is the number of seconds that have elapsed since January 1, 1970 UTC
-
-    let currentBlockTimeStamp = await getCurrentBlockTimeStamp();
+  const getTimeStampNumDaysFromNow12AM = async (numDays) => {
     const nowUTC = new Date(await getCurrentBlockTimeStamp() * 1000);
     const todayUTC = new Date(Date.UTC(nowUTC.getFullYear(), nowUTC.getMonth(), nowUTC.getDate(), 0, 0, 0)); // as of 12:00:00 AM
     const unixTime12AMToday = Math.floor(todayUTC.getTime() / 1000);
-    let releaseTime10DaysAfterStartBlockTime = unixTime12AMToday + 10 * 24 * 60 * 60; // releaseTime is date calculated in front end (should be at 12:00:00 AM)
-    //console.log("************** releaseTime10DaysAfterStartBlockTime", releaseTime10DaysAfterStartBlockTime);
-    let releaseTime20DaysAfterStartBlockTime = unixTime12AMToday + 20 * 24 * 60 * 60; // releaseTime is date calculated in front end (should be at 12:00:00 AM)
-    //console.log("************** releaseTime20DaysAfterStartBlockTime", releaseTime20DaysAfterStartBlockTime);
+    return unixTime12AMToday + (numDays * 24 * 60 * 60);
+  }
+
+  it("Token issuance multiple locks", async function() {
+    // The Unix epoch (or Unix time or POSIX time or Unix timestamp) is the number of seconds that have elapsed since January 1, 1970 UTC
+
+    const releaseTime10DaysAfterStartBlockTime = await getTimeStampNumDaysFromNow12AM(10); // releaseTime is date calculated in front end (should be at 12:00:00 AM)
+    const releaseTime20DaysAfterStartBlockTime = await getTimeStampNumDaysFromNow12AM(20); // releaseTime is date calculated in front end (should be at 12:00:00 AM)
+    console.log("************** releaseTime10DaysAfterStartBlockTime", releaseTime10DaysAfterStartBlockTime);
+    console.log("************** releaseTime20DaysAfterStartBlockTime", releaseTime20DaysAfterStartBlockTime);
 
     console.log("\nBefore mint\n--------------------------------------------");
     console.log("Current Date", new Date(await getCurrentBlockTimeStamp()*1000).toLocaleDateString());
@@ -324,7 +326,7 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
     console.log("Total locked balance", formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
-    let mintAmount = parseUnits("1000", 18);
+    const mintAmount = parseUnits("1000", 18);
     await dimitraToken.connect(owner).mint(owner.address, mintAmount);
     expect( await dimitraToken.balanceOf(owner.address)).to.equal(mintAmount);
     expect( await dimitraToken.balanceOf(account1.address)).to.equal(0);
@@ -337,7 +339,7 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
     console.log("Total locked balance", formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
-    let transferAmount150 = parseUnits("150", 18);
+    const transferAmount150 = parseUnits("150", 18);
     await dimitraToken.connect(owner).transfer(account1.address, transferAmount150);
     console.log("\nAfter transferring 150 unlocked tokens to account1\n--------------------------------------------");
     console.log("Current Date", new Date(await getCurrentBlockTimeStamp()*1000).toLocaleDateString());
@@ -348,8 +350,8 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
     console.log("Total locked balance", formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
-    let lockedTokenAmount200 = parseUnits("200", 18);
-    expect(await dimitraToken.connect(owner).issueLockedTokens(account1.address, lockedTokenAmount200, releaseTime10DaysAfterStartBlockTime));
+    const lockedTokenAmount200 = parseUnits("200", 18);
+    await dimitraToken.connect(owner).issueLockedTokens(account1.address, lockedTokenAmount200, releaseTime10DaysAfterStartBlockTime);
     console.log("\nAfter issuing 200 tokens locked for 10 days to account1\n--------------------------------------------");
     console.log("Current Date", new Date(await getCurrentBlockTimeStamp()*1000).toLocaleDateString());
     console.log("Balance of owner", formatUnits(await dimitraToken.balanceOf(owner.address)));
@@ -364,7 +366,7 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     expect(await dimitraToken.getReleasedBalance(account1.address)).to.equal(parseUnits("150", 18));  // 150
     expect(await dimitraToken.getTotalLockBoxBalance()).to.equal(parseUnits("200", 18));              // 200
 
-    let lockedTokenAmount250 = parseUnits("250", 18);
+    const lockedTokenAmount250 = parseUnits("250", 18);
     await dimitraToken.connect(owner).issueLockedTokens(account1.address, lockedTokenAmount250, releaseTime20DaysAfterStartBlockTime);
     console.log("\nAfter issue 250 tokens locked for 20 days to account1\n--------------------------------------------");
     console.log("Current Date", new Date(await getCurrentBlockTimeStamp()*1000).toLocaleDateString());
@@ -375,10 +377,10 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
     console.log("Total locked balance", formatUnits(await dimitraToken.getTotalLockBoxBalance()));
 
-    let expectedBalance600 = parseUnits("600",18); // 600 = 350 + 250
+    const expectedBalance600 = parseUnits("600",18); // 600 = 350 + 250
     expect(await dimitraToken.balanceOf(account1.address)).to.equal(expectedBalance600);
     
-    let transferAmount200 = parseUnits("200", 18);
+    const transferAmount200 = parseUnits("200", 18);
     console.log("\nAccount1 attempting transfer of 200 tokens from account1 to account2 on day 1 (should fail)\n--------------------------------------------");
     try{
       await dimitraToken.connect(account1).transfer(account2.address, transferAmount200); // Should throw revert error
@@ -412,7 +414,7 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("\n>>> Time Traveled into future 15 days\n********************************************"); // now beyound first 10 day lock release time but not second 20 day lock release time
 
     console.log("\nAccount1 attempts to transfer 350 tokens to account2 on day ? (should fail)\n--------------------------------------------");
-    let transferAmount350 = parseUnits("350", 18);
+    const transferAmount350 = parseUnits("350", 18);
     try{
       await dimitraToken.connect(account1).transfer(account2.address, transferAmount350); // Should throw revert error
     } catch (error){
@@ -442,5 +444,34 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     console.log("Released balance of account1", formatUnits(await dimitraToken.getReleasedBalance(account1.address)));
     console.log("Balance of account2", formatUnits(await dimitraToken.balanceOf(account2.address)));
     console.log("Total locked balance", formatUnits(await dimitraToken.getTotalLockBoxBalance()));
+  });
+
+  it("Token issuance locks on multiple accounts", async function() {
+    const releaseTime5DaysAfterStartBlockTime = await getTimeStampNumDaysFromNow12AM(5);
+
+    const mintAmount = parseUnits("200", 18);
+    await dimitraToken.connect(owner).mint(owner.address, mintAmount);
+
+    const amount = parseUnits("100", 18);
+    expect(await dimitraToken.connect(owner).issueLockedTokens(account1.address, amount, releaseTime5DaysAfterStartBlockTime));
+    expect(await dimitraToken.connect(owner).issueLockedTokens(account2.address, amount, releaseTime5DaysAfterStartBlockTime));
+
+    try{
+      await dimitraToken.connect(account1).transfer(account3.address, amount); // Should throw revert error
+    } catch (error){
+      assert.include(error.message,"revert","DimitraToken: Insufficient balance");
+    }
+    try{
+      await dimitraToken.connect(account2).transfer(account3.address, amount); // Should throw revert error
+    } catch (error){
+      assert.include(error.message,"revert","DimitraToken: Insufficient balance");
+    }
+
+    // time travel 5 days into future
+    await network.provider.send("evm_increaseTime", [5*86400]) // time in seconds = 5 days * 86400 seconds/day
+    await network.provider.send("evm_mine"); // force block to be mined
+
+    await dimitraToken.connect(account1).transfer(account3.address, amount); // Should succeed
+    await dimitraToken.connect(account2).transfer(account3.address, amount); // Should succeed
   });
 });
