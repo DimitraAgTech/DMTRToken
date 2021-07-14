@@ -50,7 +50,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         return true;
     }
 
-    function approve(address spender, uint256 amount) public override returns (bool){
+    function approve(address spender, uint256 amount) public override returns (bool) {
         address sender = _msgSender();
         unlockTokens(sender,amount);
         _approve(sender, spender, amount);
@@ -58,7 +58,6 @@ contract DimitraToken is ERC20PresetMinterPauser {
     }
 
     function unlockTokens(address sender, uint amount) internal {
-        
         uint[] memory releaseTimes = userReleaseTimes[sender];
         uint lockedAmount;
         

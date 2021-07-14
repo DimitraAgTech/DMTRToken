@@ -477,7 +477,6 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
 
   describe("Token alowance() approve() and transferFrom() Function Tests", function() {
     it("Receiver of locked tokens must not be able to transfer allowance to other address", async function() {
-      console.log("<<<========================================>>>");
       const amount = parseUnits("10", 18);
       await dimitraToken.connect(owner).mint(owner.address, amount);
       const releaseTime5DaysAfterStartBlockTime = await getTimeStampNumDaysFromNow12AM(5);
