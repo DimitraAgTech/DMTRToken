@@ -54,6 +54,7 @@ contract DimitraToken is ERC20PresetMinterPauser {
         address sender = _msgSender();
         unlockTokens(sender,amount);
         _approve(sender, spender, amount);
+        return true;
     }
 
     function unlockTokens(address sender, uint amount) internal {
