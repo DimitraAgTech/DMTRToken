@@ -475,3 +475,34 @@ describe("Token Issuance, Locking, and Releasing Tests", function() {
     await dimitraToken.connect(account2).transfer(account3.address, amount); // Should succeed
   });
 });
+
+// describe("Token alowance() and transferFrom() Function Tests", function() {
+//   it("Receiver of locked tokens must not be able to transfer allowance to other address", async function() {
+//     console.log("<<<========================================>>>");
+//     const amount = parseUnits("10", 18);
+//     await dimitraToken.connect(owner).mint(owner.address, amount);
+//     const releaseTime5DaysAfterStartBlockTime = await getTimeStampNumDaysFromNow12AM(5);
+//     await dimitraToken.connect(owner).issueLockedTokens(account1.address, amount, releaseTime5DaysAfterStartBlockTime)
+
+//     console.log();
+//     expect(await dimitraToken.balanceOf(account1.address)).to.equal(amount);
+//     expect(await dimitraToken.getLockedBalance(account1.address)).to.equal(amount);
+//     expect(await dimitraToken.getReleasedBalance(account1.address)).to.equal(0);
+//     console.log("balanceOf() -> account1 after issueLockedTokens()", formatUnits(await dimitraToken.balanceOf(account1.address)));
+//     console.log("getLockedBalance() -> account1 after issueLockedTokens()", formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+//     console.log("getReleasedBalance() -> account1 after issueLockedTokens()", formatUnits(await dimitraToken.getReleasedBalance(account1.address)));
+
+//     await dimitraToken.connect(account1).approve(account2.address, amount);
+//     await dimitraToken.connect(account1).transferFrom(account2.address, account3.address, amount);
+
+//     console.log();
+//     console.log("balanceOf() -> account1 after approve() and transfer()", formatUnits(await dimitraToken.balanceOf(account1.address)));
+//     console.log("getLockedBalance() -> account1 after issueLockedTokens()", formatUnits(await dimitraToken.getLockedBalance(account1.address)));
+//     console.log("getReleasedBalance() -> account1 after issueLockedTokens()", formatUnits(await dimitraToken.getReleasedBalance(account1.address)));
+
+//     // console.log("balanceOf() -> account2 after approve() and transfer()", formatUnits(await dimitraToken.balanceOf(account2.address)));
+//     // console.log("getLockedBalance() -> account2 after issueLockedTokens()", formatUnits(await dimitraToken.getLockedBalance(account2.address)));
+//     // console.log("getReleasedBalance() -> account2 after issueLockedTokens()", formatUnits(await dimitraToken.getReleasedBalance(account2.address)));
+
+//   });
+// })
