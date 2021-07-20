@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.6;
 
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 
@@ -10,7 +10,8 @@ contract DimitraToken is ERC20PresetMinterPauser {
     mapping (address => mapping(uint => uint)) private lockBoxMap; // Mapping of user => releaseTime => amount
     mapping (address => uint[]) private userReleaseTimes; // user => releaseTime array
     uint [] private updatedReleaseTimes;
-    uint private totalLockBoxBalance;
+
+    uint public totalLockBoxBalance;
 
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTime);
 
@@ -35,7 +36,16 @@ contract DimitraToken is ERC20PresetMinterPauser {
         require(releaseTime > block.timestamp, "DimitraToken: Release time must be greater than current block time");
 
         lockBoxMap[recipient][releaseTime] += lockAmount;
-        userReleaseTimes[recipient].push(releaseTime);
+
+        bool releaseTimeExists = false;
+        for (uint i=0; i<userReleaseTimes[recipient].length; i++) { // for a given recipient, release times should be unique
+            if (userReleaseTimes[recipient][i] == releaseTime) {
+                releaseTimeExists = true;
+            }
+        }
+        if (!releaseTimeExists) {
+            userReleaseTimes[recipient].push(releaseTime);
+        }
         totalLockBoxBalance += lockAmount;
 
         _transfer(sender, recipient, lockAmount);
@@ -43,56 +53,31 @@ contract DimitraToken is ERC20PresetMinterPauser {
         emit LogIssueLockedTokens(msg.sender, recipient, lockAmount, releaseTime);
     }
 
-    function transfer(address recipient, uint amount) public override returns (bool) {
-        address sender = _msgSender();
+    function _transfer (address sender, address recipient, uint256 amount) internal override {
         unlockTokens(sender,amount);
-        _transfer(sender, recipient, amount);
-        return true;
-    }
-
-    function approve(address spender, uint256 amount) public override returns (bool) {
-        address sender = _msgSender();
-        unlockTokens(sender,amount);
-        _approve(sender, spender, amount);
-        return true;
+        return super._transfer(sender, recipient, amount);
     }
 
     function unlockTokens(address sender, uint amount) internal {
-        uint[] memory releaseTimes = userReleaseTimes[sender];
+        uint256 len = userReleaseTimes[sender].length;
+        uint256 j;
         uint lockedAmount;
-        
-        delete updatedReleaseTimes;
-        
-        for (uint i = 0; i < releaseTimes.length; i++) {  // Release all expired locks
-            if(block.timestamp <= releaseTimes[i]) {
-                lockedAmount += lockBoxMap[sender][releaseTimes[i]];
+        for (uint i = 0; i < len; i++) { // Release all expired locks
+            uint256 releaseTime = userReleaseTimes[sender][j];
+            if(block.timestamp <= releaseTime) {
+                lockedAmount += lockBoxMap[sender][releaseTime];
+                j++;
             } else {
-                totalLockBoxBalance -= lockBoxMap[sender][userReleaseTimes[sender][i]];
-                delete lockBoxMap[sender][userReleaseTimes[sender][i]];
-                delete userReleaseTimes[sender][i];
+                totalLockBoxBalance -= lockBoxMap[sender][releaseTime];
+                delete lockBoxMap[sender][releaseTime];
+                userReleaseTimes[sender][j] = userReleaseTimes[sender][userReleaseTimes[sender].length - 1];
+                userReleaseTimes[sender].pop();
             }
         }
-        for (uint i = 0; i < releaseTimes.length; i++) {
-            if (userReleaseTimes[sender][i] != 0) {
-                updatedReleaseTimes.push(userReleaseTimes[sender][i]);
-            }
-        }
-        userReleaseTimes[sender] = updatedReleaseTimes;
-
         require(balanceOf(sender) - lockedAmount >= amount, "DimitraToken: Insufficient balance");
-
     }
 
-    function getTotalLockBoxBalance() public view returns (uint) {
-        require(hasRole(ISSUER_ROLE, _msgSender()), "DimitraToken: must have issuer role to get total lockbox balance");
-        return totalLockBoxBalance;
-    }
-
-    function getLockedBalance(address user) public view returns (uint) {
-        address sender = _msgSender();
-        require(user == sender || hasRole(ISSUER_ROLE, sender), "DimitraToken: Only issuer role or sender who owns address can get locked balance");
-
-        uint userLockBoxBalance = 0;
+    function getLockedBalance(address user) public view returns (uint userLockBoxBalance) {
         uint[] memory releaseTimes = userReleaseTimes[user];
 
         for (uint i = 0; i < releaseTimes.length; i++) {
@@ -100,13 +85,9 @@ contract DimitraToken is ERC20PresetMinterPauser {
                 userLockBoxBalance += lockBoxMap[user][releaseTimes[i]];
             }
         }
-         
-        return userLockBoxBalance;
     }
 
     function getReleasedBalance(address user) public view returns (uint) {
-        address sender = _msgSender();
-        require(user == sender || hasRole(ISSUER_ROLE, sender), "DimitraToken: Only issuer role or sender who owns address can get released balance");
         return balanceOf(user) - getLockedBalance(user);
     }
 }
