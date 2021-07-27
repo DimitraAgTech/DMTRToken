@@ -4,7 +4,7 @@ pragma solidity 0.8.6;
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 
 contract DimitraToken is ERC20PresetMinterPauser {
-    uint private immutable _cap;
+    uint public immutable cap;
     bytes32 private constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
   
     mapping (address => mapping(uint => uint)) private lockBoxMap; // Mapping of user => releaseTime => amount
@@ -16,16 +16,12 @@ contract DimitraToken is ERC20PresetMinterPauser {
     event LogIssueLockedTokens(address sender, address recipient, uint amount, uint releaseTime);
 
     constructor() ERC20PresetMinterPauser("Dimitra Token", "DMTR") {
-        _cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
+        cap = 1000000000 * (10 ** uint(decimals())); // Cap limit set to 1 billion tokens
         _setupRole(ISSUER_ROLE,_msgSender());
     }
 
-    function cap() public view returns (uint) {
-        return _cap;
-    }
-
     function mint(address account, uint256 amount) public virtual override {
-        require(ERC20.totalSupply() + amount <= cap(), "DimitraToken: Cap exceeded");
+        require(ERC20.totalSupply() + amount <= cap, "DimitraToken: Cap exceeded");
         ERC20PresetMinterPauser.mint(account, amount);
     }
 
