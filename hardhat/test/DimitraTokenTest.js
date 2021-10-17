@@ -889,3 +889,45 @@ describe("Token alowance() approve() and transferFrom() Function Tests", functio
   expect(await dimitraToken.getReleasedBalance(account3.address)).to.equal(amount.add(amount));
   });
 });
+
+
+describe("Token Issuance, Locking, and Releasing Tests - Bitmart Test", function() {
+
+  it("Token issuance locks and simple tokens transfer", async function() {
+    const releaseTime5DaysAfterStartBlockTime = await getTimeStampNumDaysFromNow12AM(5);
+
+    const mintAmount = parseUnits("200", 18);
+    await dimitraToken.connect(owner).mint(owner.address, mintAmount);
+
+    const amount = parseUnits("100", 18);
+    expect(await dimitraToken.connect(owner).issueLockedTokens(account1.address, amount, releaseTime5DaysAfterStartBlockTime));
+
+    try{
+      await dimitraToken.connect(account1).transfer(account3.address, amount); // Should throw revert error
+    } catch (error){
+      assert.include(error.message,"revert","DimitraToken: Insufficient balance");
+    }
+    
+    // Sending 100 unlocked tokens
+    expect(await dimitraToken.connect(owner).transfer(account1.address, amount));
+
+    // Get balance of of account 1
+    console.log(formatUnits(await dimitraToken.connect(account1).balanceOf(account1.address)));
+
+    try{
+      await dimitraToken.connect(account1).transfer(account3.address, amount);
+    } catch (error){
+      assert.include(error.message,"revert","DimitraToken: Insufficient balance");
+    }
+
+    console.log("Final balance: ",formatUnits(await dimitraToken.connect(account1).balanceOf(account1.address)));
+
+
+    // // time travel 5 days into future
+    // await network.provider.send("evm_increaseTime", [5*86400]) // time in seconds = 5 days * 86400 seconds/day
+    // await network.provider.send("evm_mine"); // force block to be mined
+
+    // await dimitraToken.connect(account1).transfer(account3.address, amount); // Should succeed
+    // await dimitraToken.connect(account2).transfer(account3.address, amount); // Should succeed
+  });
+});
